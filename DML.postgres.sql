@@ -191,141 +191,37 @@ CREATE TABLE Parcela (
 
 -------------- { Constraints } ----------------
 -------------- { Primary Key } ---------------
-ALTER TABLE TipoPessoa
-  ADD CONSTRAINT tipopessoa_pk
-  PRIMARY KEY (id);
-
-ALTER TABLE TipoLogradouro
-  ADD CONSTRAINT tipologradouro_pk
-  PRIMARY KEY (codigo);
-
-ALTER TABLE Logradouro
-  ADD CONSTRAINT logradouro_pk
-  PRIMARY KEY (id);
-
-ALTER TABLE Moeda
-  ADD CONSTRAINT moeda_pk
-  PRIMARY KEY (codigo);
-
-ALTER TABLE Nacao
-  ADD CONSTRAINT nacao_pk
-  PRIMARY KEY (codigo);
-
-ALTER TABLE Categoria
-  ADD CONSTRAINT categoria_pk
-  PRIMARY KEY (id);
-
-ALTER TABLE TipoTitulo
-  ADD CONSTRAINT tipotitulo_pk
-  PRIMARY KEY (id);
-
-ALTER TABLE Estado
-  ADD CONSTRAINT estado_pk
-  PRIMARY KEY (id);
-
-ALTER TABLE Cidade
-  ADD CONSTRAINT cidade_pk
-  PRIMARY KEY (id);
-
-ALTER TABLE CEP
-  ADD CONSTRAINT cep_pk
-  PRIMARY KEY (codigo);
-
-ALTER TABLE NivelAcesso
-  ADD CONSTRAINT nivelacesso_pk
-  PRIMARY KEY (id);
-
-ALTER TABLE Usuario
-  ADD CONSTRAINT usuario_pk
-  PRIMARY KEY (id);
-
-ALTER TABLE CodigoAcesso
-  ADD CONSTRAINT codigoacesso_pk
-  PRIMARY KEY (id);
-
-ALTER TABLE Endereco
-  ADD CONSTRAINT endereco_pk
-  PRIMARY KEY (id);
-
-ALTER TABLE Titulo
-  ADD CONSTRAINT titulo_pk
-  PRIMARY KEY (id);
-
-ALTER TABLE Parcela
-  ADD CONSTRAINT parcela_pk
-  PRIMARY KEY (id);
-
+ALTER TABLE TipoPessoa      ADD CONSTRAINT tipopessoa_pk      PRIMARY KEY (id);
+ALTER TABLE TipoLogradouro  ADD CONSTRAINT tipologradouro_pk  PRIMARY KEY (codigo);
+ALTER TABLE Logradouro      ADD CONSTRAINT logradouro_pk      PRIMARY KEY (id);
+ALTER TABLE Moeda           ADD CONSTRAINT moeda_pk           PRIMARY KEY (codigo);
+ALTER TABLE Nacao           ADD CONSTRAINT nacao_pk           PRIMARY KEY (codigo);
+ALTER TABLE Categoria       ADD CONSTRAINT categoria_pk       PRIMARY KEY (id);
+ALTER TABLE TipoTitulo      ADD CONSTRAINT tipotitulo_pk      PRIMARY KEY (id);
+ALTER TABLE Estado          ADD CONSTRAINT estado_pk          PRIMARY KEY (id);
+ALTER TABLE Cidade          ADD CONSTRAINT cidade_pk          PRIMARY KEY (id);
+ALTER TABLE CEP             ADD CONSTRAINT cep_pk             PRIMARY KEY (codigo);
+ALTER TABLE NivelAcesso     ADD CONSTRAINT nivelacesso_pk     PRIMARY KEY (id);
+ALTER TABLE Usuario         ADD CONSTRAINT usuario_pk         PRIMARY KEY (id);
+ALTER TABLE CodigoAcesso    ADD CONSTRAINT codigoacesso_pk    PRIMARY KEY (id);
+ALTER TABLE Endereco        ADD CONSTRAINT endereco_pk        PRIMARY KEY (id);
+ALTER TABLE Titulo          ADD CONSTRAINT titulo_pk          PRIMARY KEY (id);
+ALTER TABLE Parcela         ADD CONSTRAINT parcela_pk         PRIMARY KEY (id);
 -------------- { Foreign Key } --------------
-ALTER TABLE Logradouro
-  ADD CONSTRAINT logradouro_tipoLogradouro_fk
-  FOREIGN KEY (codigoTipoLogradouro)
-  REFERENCES TipoLogradouro(codigo);
-
-ALTER TABLE Nacao
-  ADD CONSTRAINT nacao_moeda_fk
-  FOREIGN KEY (codigoMoeda)
-  REFERENCES Moeda(codigo);
-
-ALTER TABLE Estado
-  ADD CONSTRAINT estado_nacao_fk
-  FOREIGN KEY (codigoNacao)
-  REFERENCES Nacao(codigo);
-
-ALTER TABLE Cidade
-  ADD CONSTRAINT cidade_estado_fk
-  FOREIGN KEY (idEstado)
-  REFERENCES Estado(id);
-
-ALTER TABLE CEP
-  ADD CONSTRAINT cep_cidade_fk
-  FOREIGN KEY (idCidade)
-  REFERENCES Cidade(id);
-
-ALTER TABLE Usuario
-  ADD CONSTRAINT usuario_tipopessoa_fk
-  FOREIGN KEY (idTipoPessoa)
-  REFERENCES TipoPessoa(id);
-
-ALTER TABLE Usuario
-  ADD CONSTRAINT usuario_nivelacesso_fk
-  FOREIGN KEY (idNivelAcesso)
-  REFERENCES NivelAcesso(id);
-
-ALTER TABLE Endereco
-  ADD CONSTRAINT endereco_cep_fk
-  FOREIGN KEY (codigoCEP)
-  REFERENCES CEP(codigo);
-
-ALTER TABLE Endereco
-  ADD CONSTRAINT endereco_logradouro_fk
-  FOREIGN KEY (idLogradouro)
-  REFERENCES Logradouro(id);
-
-ALTER TABLE Endereco
-  ADD CONSTRAINT endereco_usuario_fk
-  FOREIGN KEY (idUsuario)
-  REFERENCES Usuario(id);
-
-ALTER TABLE Titulo
-  ADD CONSTRAINT titulo_tipotitulo_fk
-  FOREIGN KEY (idTipoTitulo)
-  REFERENCES TipoTitulo(id);
-
-ALTER TABLE Titulo
-  ADD CONSTRAINT titulo_usuario_fk
-  FOREIGN KEY (idUsuario)
-  REFERENCES Usuario(id);
-
-ALTER TABLE Titulo
-  ADD CONSTRAINT titulo_categoria_fk
-  FOREIGN KEY (idCategoria)
-  REFERENCES Categoria(id);
-
-ALTER TABLE Parcela
-  ADD CONSTRAINT parcela_titulo_fk
-  FOREIGN KEY (idTitulo)
-  REFERENCES Titulo(id);
-
+ALTER TABLE Logradouro ADD CONSTRAINT logradouro_tipoLogradouro_fk  FOREIGN KEY (codigoTipoLogradouro)  REFERENCES TipoLogradouro(codigo);
+ALTER TABLE Nacao      ADD CONSTRAINT nacao_moeda_fk                FOREIGN KEY (codigoMoeda)           REFERENCES Moeda(codigo);
+ALTER TABLE Estado     ADD CONSTRAINT estado_nacao_fk               FOREIGN KEY (codigoNacao)           REFERENCES Nacao(codigo);
+ALTER TABLE Cidade     ADD CONSTRAINT cidade_estado_fk              FOREIGN KEY (idEstado)              REFERENCES Estado(id);
+ALTER TABLE CEP        ADD CONSTRAINT cep_cidade_fk                 FOREIGN KEY (idCidade)              REFERENCES Cidade(id);
+ALTER TABLE Usuario    ADD CONSTRAINT usuario_tipopessoa_fk         FOREIGN KEY (idTipoPessoa)          REFERENCES TipoPessoa(id);
+ALTER TABLE Usuario    ADD CONSTRAINT usuario_nivelacesso_fk        FOREIGN KEY (idNivelAcesso)         REFERENCES NivelAcesso(id);
+ALTER TABLE Endereco   ADD CONSTRAINT endereco_cep_fk               FOREIGN KEY (codigoCEP)             REFERENCES CEP(codigo);
+ALTER TABLE Endereco   ADD CONSTRAINT endereco_logradouro_fk        FOREIGN KEY (idLogradouro)          REFERENCES Logradouro(id);
+ALTER TABLE Endereco   ADD CONSTRAINT endereco_usuario_fk           FOREIGN KEY (idUsuario)             REFERENCES Usuario(id);
+ALTER TABLE Titulo     ADD CONSTRAINT titulo_tipotitulo_fk          FOREIGN KEY (idTipoTitulo)          REFERENCES TipoTitulo(id);
+ALTER TABLE Titulo     ADD CONSTRAINT titulo_usuario_fk             FOREIGN KEY (idUsuario)             REFERENCES Usuario(id);
+ALTER TABLE Titulo     ADD CONSTRAINT titulo_categoria_fk           FOREIGN KEY (idCategoria)           REFERENCES Categoria(id);
+ALTER TABLE Parcela    ADD CONSTRAINT parcela_titulo_fk             FOREIGN KEY (idTitulo)              REFERENCES Titulo(id);
 ------------------ { Views } -----------------
 CREATE VIEW vw_usuarios_ativos AS
   SELECT id, nome, documento, telefone, email, senha, idtipopessoa, idnivelacesso, datacriacao, dataalteracao
