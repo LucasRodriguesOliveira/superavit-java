@@ -1,3 +1,16 @@
+/*
+
+  A seguinte estrutura foi criada e testada em ambiente local em banco de dados POSTGRESQL
+  Também foram realizados testes utilizando a API HTML: WebSQL*
+
+  Esta é uma versão revisada e estável
+
+
+  * a API HTML: WebSQL não fornece suporte total para todas as operações, como por exemplo: "CREATE SEQUENCE"
+    Ainda não foi verificado a compatibilidade com Triggers
+
+*/
+
 ---------------- { Sequences } -------------------
 CREATE SEQUENCE seq_tipopessoa_id         START 1;
 CREATE SEQUENCE seq_tipologradouro_codigo START 1;
@@ -15,6 +28,10 @@ CREATE SEQUENCE seq_endereco_id           START 1;
 CREATE SEQUENCE seq_titulo_id             START 1;
 CREATE SEQUENCE seq_parcela_id            START 1;
 CREATE SEQUENCE seq_cambio_codigo         START 1;
+CREATE SEQUENCE seq_tipocaixa_id          START 1;
+CREATE SEQUENCE seq_caixa_codigo          START 1;
+CREATE SEQUENCE seq_operacaocaixa_id      START 1;
+CREATE SEQUENCE seq_extrato_codigo        START 1;
 
 ---------------- { Tables } -----------------------------------------------------
 CREATE TABLE TipoPessoa (
@@ -201,6 +218,54 @@ CREATE TABLE Parcela (
   excluido             BOOLEAN       NOT NULL DEFAULT FALSE
 );
 
+CREATE TABLE TipoCaixa (
+  id                   INTEGER       NOT NULL DEFAULT nextval('seq_tipocaixa_id'),
+  descricao            VARCHAR(100)  NOT NULL,
+  dataCriacao          TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  dataAlteracao        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ativo                BOOLEAN       NOT NULL DEFAULT TRUE,
+  excluido             BOOLEAN       NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE Caixa (
+  codigo               INTEGER       NOT NULL DEFAULT nextval('seq_caixa_codigo'),
+  nome                 VARCHAR(100)  NOT NULL,
+  idUsuario            INTEGER       NOT NULL,
+  idTipoCaixa          INTEGER       NOT NULL,
+  codigoMoeda          INTEGER       NOT NULL,
+  corVermelho          INTEGER       NOT NULL DEFAULT 0,
+  corAzul              INTEGER       NOT NULL DEFAULT 0,
+  corVerde             INTEGER       NOT NULL DEFAULT 0,
+  prioridade           INTEGER       NOT NULL,
+  saldo                NUMERIC(14,2) NOT NULL DEFAULT 0.0,
+  dataCriacao          TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  dataAlteracao        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ativo                BOOLEAN       NOT NULL DEFAULT TRUE,
+  excluido             BOOLEAN       NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE OperacaoCaixa (
+  id                   INTEGER       NOT NULL DEFAULT nextval('seq_operacaocaixa_id'),
+  descricao            VARCHAR(100)  NOT NULL,
+  dataCriacao          TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  dataAlteracao        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ativo                BOOLEAN       NOT NULL DEFAULT TRUE,
+  excluido             BOOLEAN       NOT NULL DEFAULT FALSE
+);
+
+-- valorinicial e final é por questão de historicidade
+CREATE TABLE Extrato (
+  codigo               INTEGER       NOT NULL DEFAULT nextval('seq_extrato_codigo'),
+  codigoCaixa          INTEGER       NOT NULL,
+  idOperacaoCaixa      INTEGER       NOT NULL,
+  valorInicial         NUMERIC(14,2) NOT NULL,
+  valorFinal           NUMERIC(14,2) NOT NULL,
+  dataCriacao          TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  dataAlteracao        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ativo                BOOLEAN       NOT NULL DEFAULT TRUE,
+  excluido             BOOLEAN       NOT NULL DEFAULT FALSE
+);
+
 -------------- { Constraints } ----------------
 -------------- { Primary Key } ---------------
 ALTER TABLE TipoPessoa     ADD CONSTRAINT tipopessoa_pk     PRIMARY KEY (id);
@@ -220,6 +285,10 @@ ALTER TABLE CodigoAcesso   ADD CONSTRAINT codigoacesso_pk   PRIMARY KEY (id);
 ALTER TABLE Endereco       ADD CONSTRAINT endereco_pk       PRIMARY KEY (id);
 ALTER TABLE Titulo         ADD CONSTRAINT titulo_pk         PRIMARY KEY (id);
 ALTER TABLE Parcela        ADD CONSTRAINT parcela_pk        PRIMARY KEY (id);
+ALTER TABLE TipoCaixa      ADD CONSTRAINT tipocaixa_pk      PRIMARY KEY (id);
+ALTER TABLE Caixa          ADD CONSTRAINT caixa_pk          PRIMARY KEY (codigo);
+ALTER TABLE OperacaoCaixa  ADD CONSTRAINT operacaocaixa_pk  PRIMARY KEY (id);
+ALTER TABLE Extrato        ADD CONSTRAINT extrato_pk        PRIMARY KEY (codigo);
 -------------- { Foreign Key } --------------
 ALTER TABLE Logradouro ADD CONSTRAINT logradouro_tipoLogradouro_fk FOREIGN KEY (codigoTipoLogradouro) REFERENCES TipoLogradouro(codigo);
 ALTER TABLE Cambio     ADD CONSTRAINT cambio_moedaOrigem_fk        FOREIGN KEY (moedaOrigem)          REFERENCES Moeda(codigo);
@@ -237,6 +306,11 @@ ALTER TABLE Titulo     ADD CONSTRAINT titulo_tipotitulo_fk         FOREIGN KEY (
 ALTER TABLE Titulo     ADD CONSTRAINT titulo_usuario_fk            FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
 ALTER TABLE Titulo     ADD CONSTRAINT titulo_categoria_fk          FOREIGN KEY (idCategoria)          REFERENCES Categoria(id);
 ALTER TABLE Parcela    ADD CONSTRAINT parcela_titulo_fk            FOREIGN KEY (idTitulo)             REFERENCES Titulo(id);
+ALTER TABLE Caixa      ADD CONSTRAINT caixa_usuario_fk             FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
+ALTER TABLE Caixa      ADD CONSTRAINT caixa_tipocaixa_fk           FOREIGN KEY (idTipoCaixa)          REFERENCES TipoCaixa(id);
+ALTER TABLE Caixa      ADD CONSTRAINT caixa_moeda_fk               FOREIGN KEY (codigoMoeda)          REFERENCES Moeda(codigo);
+ALTER TABLE Extrato    ADD CONSTRAINT extrato_caixa_fk             FOREIGN KEY (codigoCaixa)          REFERENCES Caixa(codigo);
+ALTER TABLE Extrato    ADD CONSTRAINT extrato_operacaocaixa_fk     FOREIGN KEY (idOperacaoCaixa)      REFERENCES OperacaoCaixa(id);
 ------------------ { Views } -----------------
 CREATE VIEW vw_usuarios_ativos AS
   SELECT id, nome, documento, telefone, email, senha, idtipopessoa, idnivelacesso, datacriacao, dataalteracao
@@ -284,3 +358,23 @@ CREATE VIEW vw_usuarios_padrao AS
     FROM usuario U
    INNER JOIN nivelacesso N ON (N.id = U.idnivelacesso)
    WHERE N.descricao = 'Padrão';
+
+CREATE VIEW vw_extrato_final AS
+  SELECT c.nome                             AS "Caixa",
+         oc.descricao                       AS "Operação",
+         SUM(e.valorFinal - e.valorInicial) AS "Movimentações",
+         c.saldo                            AS "Saldo",
+         u.id                               AS "Id Usuário",
+         u.nome                             AS "Nome Usuário"
+    FROM Extrato e
+   INNER JOIN Caixa c ON (c.codigo = e.codigoCaixa)
+   INNER JOIN OperacaoCaixa oc ON (oc.id = e.idOperacaoCaixa)
+   INNER JOIN Usuario u ON (u.id = c.idUsuario)
+   WHERE IS c.ativo
+     AND NOT c.excluido
+     AND IS e.ativo
+     AND NOT e.excluido
+     AND IS oc.ativo
+     AND NOT oc.excluido
+   GROUP BY c.nome, oc.descricao
+   ORDER BY c.nome ASC, oc.descricao ASC;

@@ -1,3 +1,4 @@
+
 ---------------- { Sequences } -------------------
 CREATE SEQUENCE seq_tipopessoa_id;
 CREATE SEQUENCE seq_tipologradouro_codigo;
