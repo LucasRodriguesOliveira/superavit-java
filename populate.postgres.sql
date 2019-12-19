@@ -167,3 +167,9 @@ INSERT INTO Usuario (nome, documento, telefone, email, senha, idTipoPessoa, idNi
          ('João da Silva', '12345678900', '', 'joao@email.com','j.silva', 1, 2),
          ('Ana Flávia', '12121234344', '', 'ana@email.com','ana', 1, 3),
          ('Maria Clara', '77777788899', '', 'maria@email.com','maria', 1, 3);
+
+INSERT INTO TipoCaixa(descricao)
+  VALUES ('Carteira'), ('Banco'), ('Poupança');
+
+INSERT INTO OperacaoCaixa(descricao)
+  VALUES ('Débito'), ('Crédito'), ('Reajuste');

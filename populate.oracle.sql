@@ -177,6 +177,16 @@ INSERT INTO NivelAcesso (descricao, prioridade)
 
 INSERT INTO Usuario (nome, documento, telefone, email, senha, idTipoPessoa, idNivelAcesso)
             SELECT 'Lucas Oliveira', '11122233344', '', 'lucas@email.com','admin',   1, 1 FROM DUAL
-  UNION ALL SELECT 'João da Silva',  '12345678900', '', 'joao@email.com', 'j.silva', 1, 2 FROM DUAL,
-  UNION ALL SELECT 'Ana Flávia',     '12121234344', '', 'ana@email.com',  'ana',     1, 3 FROM DUAL,
+  UNION ALL SELECT 'João da Silva',  '12345678900', '', 'joao@email.com', 'j.silva', 1, 2 FROM DUAL
+  UNION ALL SELECT 'Ana Flávia',     '12121234344', '', 'ana@email.com',  'ana',     1, 3 FROM DUAL
   UNION ALL SELECT 'Maria Clara',    '77777788899', '', 'maria@email.com','maria',   1, 3 FROM DUAL;
+
+INSERT INTO TipoCaixa (descricao)
+            SELECT 'Carteira' FROM DUAL
+  UNION ALL SELECT 'Banco'    FROM DUAL
+  UNION ALL SELECT 'Poupança' FROM DUAL;
+
+INSERT INTO OperacaoCaixa (descricao)
+            SELECT 'Débito'   FROM DUAL
+  UNION ALL SELECT 'Crédito'  FROM DUAL
+  UNION ALL SELECT 'Reajuste' FROM DUAL;

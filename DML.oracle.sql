@@ -16,6 +16,10 @@ CREATE SEQUENCE seq_endereco_id;
 CREATE SEQUENCE seq_titulo_id;
 CREATE SEQUENCE seq_parcela_id;
 CREATE SEQUENCE seq_cambio_codigo;
+CREATE SEQUENCE seq_tipocaixa_id;
+CREATE SEQUENCE seq_caixa_codigo;
+CREATE SEQUENCE seq_operacaocaixa_id;
+CREATE SEQUENCE seq_extrato_codigo;
 
 ---------------- { Tables } -----------------------------------------------------
 CREATE TABLE TipoPessoa (
@@ -200,6 +204,54 @@ CREATE TABLE Parcela (
   ativo                VARCHAR2(1)   DEFAULT 'S'          NOT NULL,
   excluido             VARCHAR2(1)   DEFAULT 'N'          NOT NULL
 );
+
+CREATE TABLE TipoCaixa (
+  id                   NUMBER                             NOT NULL,
+  descricao            VARCHAR2(100)                      NOT NULL,
+  dataCriacao          TIMESTAMP     DEFAULT SYSTIMESTAMP NOT NULL,
+  dataAlteracao        TIMESTAMP     DEFAULT SYSTIMESTAMP NOT NULL,
+  ativo                VARCHAR2(1)   DEFAULT 'S'          NOT NULL,
+  excluido             VARCHAR2(1)   DEFAULT 'N'          NOT NULL
+);
+
+CREATE TABLE Caixa (
+  codigo               NUMBER                             NOT NULL,
+  nome                 VARCHAR2(100)                      NOT NULL,
+  idUsuario            NUMBER                             NOT NULL,
+  idTipoCaixa          NUMBER                             NOT NULL,
+  codigoMoeda          NUMBER                             NOT NULL,
+  corVermelho          NUMBER(3)     DEFAULT 0            NOT NULL,
+  corAzul              NUMBER(3)     DEFAULT 0            NOT NULL,
+  corVerde             NUMBER(3)     DEFAULT 0            NOT NULL,
+  prioridade           NUMBER                             NOT NULL,
+  saldo                NUMBER(14,2)  DEFAULT 0.0          NOT NULL,
+  dataCriacao          TIMESTAMP     DEFAULT SYSTIMESTAMP NOT NULL,
+  dataAlteracao        TIMESTAMP     DEFAULT SYSTIMESTAMP NOT NULL,
+  ativo                VARCHAR2(1)   DEFAULT 'S'          NOT NULL,
+  excluido             VARCHAR2(1)   DEFAULT 'N'          NOT NULL
+);
+
+CREATE TABLE OperacaoCaixa (
+  id                   NUMBER                             NOT NULL,
+  descricao            VARCHAR2(100)                      NOT NULL,
+  dataCriacao          TIMESTAMP     DEFAULT SYSTIMESTAMP NOT NULL,
+  dataAlteracao        TIMESTAMP     DEFAULT SYSTIMESTAMP NOT NULL,
+  ativo                VARCHAR2(1)   DEFAULT 'S'          NOT NULL,
+  excluido             VARCHAR2(1)   DEFAULT 'N'          NOT NULL
+);
+
+-- valorinicial e final é por questão de historicidade
+CREATE TABLE Extrato (
+  codigo               NUMBER                             NOT NULL,
+  codigoCaixa          NUMBER                             NOT NULL,
+  idOperacaoCaixa      NUMBER                             NOT NULL,
+  valorInicial         NUMBER(14,2)                       NOT NULL,
+  valorFinal           NUMBER(14,2)                       NOT NULL,
+  dataCriacao          TIMESTAMP     DEFAULT SYSTIMESTAMP NOT NULL,
+  dataAlteracao        TIMESTAMP     DEFAULT SYSTIMESTAMP NOT NULL,
+  ativo                VARCHAR2(1)   DEFAULT 'S'          NOT NULL,
+  excluido             VARCHAR2(1)   DEFAULT 'N'          NOT NULL
+);
 -------------- { Constraints } ----------------
 -------------- { Primary Key } ---------------
 ALTER TABLE TipoPessoa     ADD CONSTRAINT tipopessoa_pk     PRIMARY KEY (id);
@@ -219,6 +271,10 @@ ALTER TABLE CodigoAcesso   ADD CONSTRAINT codigoacesso_pk   PRIMARY KEY (id)
 ALTER TABLE Endereco       ADD CONSTRAINT endereco_pk       PRIMARY KEY (id);
 ALTER TABLE Titulo         ADD CONSTRAINT titulo_pk         PRIMARY KEY (id);
 ALTER TABLE Parcela        ADD CONSTRAINT parcela_pk        PRIMARY KEY (id);
+ALTER TABLE TipoCaixa      ADD CONSTRAINT tipocaixa_pk      PRIMARY KEY (id);
+ALTER TABLE Caixa          ADD CONSTRAINT caixa_pk          PRIMARY KEY (codigo);
+ALTER TABLE OperacaoCaixa  ADD CONSTRAINT operacaocaixa_pk  PRIMARY KEY (id);
+ALTER TABLE Extrato        ADD CONSTRAINT extrato_pk        PRIMARY KEY (codigo);
 -------------- { Foreign Key } --------------
 ALTER TABLE Logradouro ADD CONSTRAINT logradouro_tipoLogradouro_fk FOREIGN KEY (codigoTipoLogradouro) REFERENCES TipoLogradouro(codigo);
 ALTER TABLE Cambio     ADD CONSTRAINT cambio_moedaOrigem_fk        FOREIGN KEY (moedaOrigem)          REFERENCES Moeda(codigo);
@@ -236,6 +292,11 @@ ALTER TABLE Titulo     ADD CONSTRAINT titulo_tipotitulo_fk         FOREIGN KEY (
 ALTER TABLE Titulo     ADD CONSTRAINT titulo_usuario_fk            FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
 ALTER TABLE Titulo     ADD CONSTRAINT titulo_categoria_fk          FOREIGN KEY (idCategoria)          REFERENCES Categoria(id);
 ALTER TABLE Parcela    ADD CONSTRAINT parcela_titulo_fk            FOREIGN KEY (idTitulo)             REFERENCES Titulo(id);
+ALTER TABLE Caixa      ADD CONSTRAINT caixa_usuario_fk             FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
+ALTER TABLE Caixa      ADD CONSTRAINT caixa_tipocaixa_fk           FOREIGN KEY (idTipoCaixa)          REFERENCES TipoCaixa(id);
+ALTER TABLE Caixa      ADD CONSTRAINT caixa_moeda_fk               FOREIGN KEY (codigoMoeda)          REFERENCES Moeda(codigo);
+ALTER TABLE Extrato    ADD CONSTRAINT extrato_caixa_fk             FOREIGN KEY (codigoCaixa)          REFERENCES Caixa(codigo);
+ALTER TABLE Extrato    ADD CONSTRAINT extrato_operacaocaixa_fk     FOREIGN KEY (idOperacaoCaixa)      REFERENCES OperacaoCaixa(id);
 ----------- { Triggers } -------------------
 CREATE OR REPLACE TRIGGER nextseq_tipopessoa
   BEFORE INSERT ON TipoPessoa
@@ -250,7 +311,7 @@ CREATE OR REPLACE TRIGGER nextseq_tipoLogradouro
   BEFORE INSERT ON TipoLogradouro
   FOR EACH ROW
   BEGIN
-    SELECT seq_tipoLogradouro_codigo
+    SELECT seq_tipoLogradouro_codigo.nextval
       INTO :NEW.codigo
       FROM DUAL;
   END;
@@ -259,7 +320,7 @@ CREATE OR REPLACE TRIGGER nextseq_logradouro
   BEFORE INSERT ON Logradouro
   FOR EACH ROW
   BEGIN
-    SELECT seq_logradouro_id
+    SELECT seq_logradouro_id.nextval
       INTO :NEW.id
       FROM DUAL;
   END;
@@ -268,7 +329,7 @@ CREATE OR REPLACE TRIGGER nextseq_moeda
   BEFORE INSERT ON Moeda
   FOR EACH ROW
   BEGIN
-    SELECT seq_moeda_codigo
+    SELECT seq_moeda_codigo.nextval
       INTO :NEW.codigo
       FROM DUAL;
   END;
@@ -277,7 +338,7 @@ CREATE OR REPLACE TRIGGER nextseq_nacao
   BEFORE INSERT ON Nacao
   FOR EACH ROW
   BEGIN
-    SELECT seq_nacao_codigo
+    SELECT seq_nacao_codigo.nextval
       INTO :NEW.codigo
       FROM DUAL;
   END;
@@ -286,7 +347,7 @@ CREATE OR REPLACE TRIGGER nextseq_categoria
   BEFORE INSERT ON Categoria
   FOR EACH ROW
   BEGIN
-    SELECT seq_categoria_id
+    SELECT seq_categoria_id.nextval
       INTO :NEW.id
       FROM DUAL;
   END;
@@ -295,7 +356,7 @@ CREATE OR REPLACE TRIGGER nextseq_tipotitulo
   BEFORE INSERT ON TipoTitulo
   FOR EACH ROW
   BEGIN
-    SELECT seq_tipotitulo_id
+    SELECT seq_tipotitulo_id.nextval
       INTO :NEW.id
       FROM DUAL;
   END;
@@ -304,7 +365,7 @@ CREATE OR REPLACE TRIGGER nextseq_estado
   BEFORE INSERT ON Estado
   FOR EACH ROW
   BEGIN
-    SELECT seq_estado_id
+    SELECT seq_estado_id.nextval
       INTO :NEW.id
       FROM DUAL;
   END;
@@ -313,7 +374,7 @@ CREATE OR REPLACE TRIGGER nextseq_cidade
   BEFORE INSERT ON Cidade
   FOR EACH ROW
   BEGIN
-    SELECT seq_cidade_id
+    SELECT seq_cidade_id.nextval
       INTO :NEW.id
       FROM DUAL;
   END;
@@ -322,7 +383,7 @@ CREATE OR REPLACE TRIGGER nextseq_nivelacesso
   BEFORE INSERT ON NivelAcesso
   FOR EACH ROW
   BEGIN
-    SELECT seq_nivelacesso_id
+    SELECT seq_nivelacesso_id.nextval
       INTO :NEW.id
       FROM DUAL;
   END;
@@ -331,7 +392,7 @@ CREATE OR REPLACE TRIGGER nextseq_usuario
   BEFORE INSERT ON Usuario
   FOR EACH ROW
   BEGIN
-    SELECT seq_usuario_id
+    SELECT seq_usuario_id.nextval
       INTO :NEW.id
       FROM DUAL;
   END;
@@ -340,7 +401,7 @@ CREATE OR REPLACE TRIGGER nextseq_codigoacesso
   BEFORE INSERT ON CodigoAcesso
   FOR EACH ROW
   BEGIN
-    SELECT seq_codigoacesso_id
+    SELECT seq_codigoacesso_id.nextval
       INTO :NEW.id
       FROM DUAL;
   END;
@@ -349,7 +410,7 @@ CREATE OR REPLACE TRIGGER nextseq_endereco
   BEFORE INSERT ON Endereco
   FOR EACH ROW
   BEGIN
-    SELECT seq_endereco_id
+    SELECT seq_endereco_id.nextval
       INTO :NEW.id
       FROM DUAL;
   END;
@@ -358,7 +419,7 @@ CREATE OR REPLACE TRIGGER nextseq_titulo
   BEFORE INSERT ON Titulo
   FOR EACH ROW
   BEGIN
-    SELECT seq_titulo_id
+    SELECT seq_titulo_id.nextval
       INTO :NEW.id
       FROM DUAL;
   END;
@@ -367,11 +428,46 @@ CREATE OR REPLACE TRIGGER nextseq_parcela
   BEFORE INSERT ON Parcela
   FOR EACH ROW
   BEGIN
-    SELECT seq_parcela_id
+    SELECT seq_parcela_id.nextval
       INTO :NEW.id
       FROM DUAL;
   END;
 
+CREATE OR REPLACE TRIGGER nextseq_tipocaixa
+  BEFORE INSERT ON TipoCaixa
+  FOR EACH ROW
+  BEGIN
+    SELECT seq_tipocaixa_id.nextval
+      INTO :NEW.id
+      FROM DUAL;
+  END;
+
+CREATE OR REPLACE TRIGGER nextseq_caixa
+  BEFORE INSERT ON Caixa
+  FOR EACH ROW
+  BEGIN
+    SELECT seq_caixa_codigo.nextval
+      INTO :NEW.codigo
+      FROM DUAL;
+  END;
+
+CREATE OR REPLACE TRIGGER nextseq_operacaocaixa
+  BEFORE INSERT ON OperacaoCaixa
+  FOR EACH ROW
+  BEGIN
+    SELECT seq_operacaocaixa_id.nextval
+      INTO :NEW.id
+      FROM DUAL;
+  END;
+
+CREATE OR REPLACE TRIGGER nextseq_extrato
+  BEFORE INSERT ON Extrato
+  FOR EACH ROW
+  BEGIN
+    SELECT seq_extrato_codigo.nextval
+      INTO :NEW.codigo
+      FROM DUAL;
+  END;
 ------------------ { Views } -----------------
 CREATE VIEW vw_usuarios_ativos AS
   SELECT id, nome, documento, telefone, email, senha, idtipopessoa, idnivelacesso, datacriacao, dataalteracao
@@ -419,3 +515,23 @@ CREATE VIEW vw_usuarios_padrao AS
     FROM usuario U
    INNER JOIN nivelacesso N ON (N.id = U.idnivelacesso)
    WHERE N.descricao = 'Padrão';
+
+CREATE VIEW vw_extrato_final AS
+  SELECT c.nome                             AS "Caixa",
+         oc.descricao                       AS "Operação",
+         SUM(e.valorFinal - e.valorInicial) AS "Movimentações",
+         c.saldo                            AS "Saldo",
+         u.id                               AS "Id Usuário",
+         u.nome                             AS "Nome Usuário"
+    FROM Extrato e
+   INNER JOIN Caixa          c ON (c.codigo = e.codigoCaixa)
+   INNER JOIN OperacaoCaixa oc ON (oc.id    = e.idOperacaoCaixa)
+   INNER JOIN Usuario        u ON (u.id     = c.idUsuario)
+   WHERE c.ativo     = 'S'
+     AND c.excluido  = 'N'
+     AND e.ativo     = 'S'
+     AND e.excluido  = 'N'
+     AND oc.ativo    = 'S'
+     AND oc.excluido = 'N'
+   GROUP BY c.nome, oc.descricao
+   ORDER BY c.nome ASC, oc.descricao ASC;
