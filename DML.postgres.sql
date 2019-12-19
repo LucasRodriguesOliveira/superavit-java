@@ -144,7 +144,7 @@ CREATE TABLE CEP (
   excluido             BOOLEAN       NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE NivelAcesso(
+CREATE TABLE NivelAcesso( -- Uso futuro
   id                   INTEGER       NOT NULL DEFAULT nextval('seq_nivelacesso_id'),
   descricao            VARCHAR(50)   NOT NULL DEFAULT 'Padrão',
   prioridade           INTEGER       NOT NULL,
