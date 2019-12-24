@@ -32,6 +32,7 @@ CREATE SEQUENCE seq_tipocaixa_id          START 1;
 CREATE SEQUENCE seq_caixa_codigo          START 1;
 CREATE SEQUENCE seq_operacaocaixa_id      START 1;
 CREATE SEQUENCE seq_extrato_codigo        START 1;
+CREATE SEQUENCE seq_cobranca_codigo       START 1;
 
 ---------------- { Tables } -----------------------------------------------------
 CREATE TABLE TipoPessoa (
@@ -266,6 +267,17 @@ CREATE TABLE Extrato (
   excluido             BOOLEAN       NOT NULL DEFAULT FALSE
 );
 
+CREATE TABLE Cobranca (
+  codigo               INTEGER       NOT NULL DEFAULT nextval('seq_cobranca_codigo'),
+  idUsuarioSolicitante INTEGER       NOT NULL,
+  idUsuarioPagador     INTEGER       NOT NULL,
+  idTitulo             INTEGER       NOT NULL,
+  dataCriacao          TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  dataAlteracao        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ativo                BOOLEAN       NOT NULL DEFAULT TRUE,
+  excluido             BOOLEAN       NOT NULL DEFAULT FALSE
+);
+
 -------------- { Constraints } ----------------
 -------------- { Primary Key } ---------------
 ALTER TABLE TipoPessoa     ADD CONSTRAINT tipopessoa_pk     PRIMARY KEY (id);
@@ -289,28 +301,32 @@ ALTER TABLE TipoCaixa      ADD CONSTRAINT tipocaixa_pk      PRIMARY KEY (id);
 ALTER TABLE Caixa          ADD CONSTRAINT caixa_pk          PRIMARY KEY (codigo);
 ALTER TABLE OperacaoCaixa  ADD CONSTRAINT operacaocaixa_pk  PRIMARY KEY (id);
 ALTER TABLE Extrato        ADD CONSTRAINT extrato_pk        PRIMARY KEY (codigo);
+ALTER TABLE Cobranca       ADD CONSTRAINT cobranca_pk       PRIMARY KEY (codigo);
 -------------- { Foreign Key } --------------
-ALTER TABLE Logradouro ADD CONSTRAINT logradouro_tipoLogradouro_fk FOREIGN KEY (codigoTipoLogradouro) REFERENCES TipoLogradouro(codigo);
-ALTER TABLE Cambio     ADD CONSTRAINT cambio_moedaOrigem_fk        FOREIGN KEY (moedaOrigem)          REFERENCES Moeda(codigo);
-ALTER TABLE Cambio     ADD CONSTRAINT cambio_moedaDestino_fk       FOREIGN KEY (moedaDestino)         REFERENCES Moeda(codigo);
-ALTER TABLE Nacao      ADD CONSTRAINT nacao_moeda_fk               FOREIGN KEY (codigoMoeda)          REFERENCES Moeda(codigo);
-ALTER TABLE Estado     ADD CONSTRAINT estado_nacao_fk              FOREIGN KEY (codigoNacao)          REFERENCES Nacao(codigo);
-ALTER TABLE Cidade     ADD CONSTRAINT cidade_estado_fk             FOREIGN KEY (idEstado)             REFERENCES Estado(id);
-ALTER TABLE CEP        ADD CONSTRAINT cep_cidade_fk                FOREIGN KEY (idCidade)             REFERENCES Cidade(id);
-ALTER TABLE Usuario    ADD CONSTRAINT usuario_tipopessoa_fk        FOREIGN KEY (idTipoPessoa)         REFERENCES TipoPessoa(id);
-ALTER TABLE Usuario    ADD CONSTRAINT usuario_nivelacesso_fk       FOREIGN KEY (idNivelAcesso)        REFERENCES NivelAcesso(id);
-ALTER TABLE Endereco   ADD CONSTRAINT endereco_cep_fk              FOREIGN KEY (codigoCEP)            REFERENCES CEP(codigo);
-ALTER TABLE Endereco   ADD CONSTRAINT endereco_logradouro_fk       FOREIGN KEY (idLogradouro)         REFERENCES Logradouro(id);
-ALTER TABLE Endereco   ADD CONSTRAINT endereco_usuario_fk          FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
-ALTER TABLE Titulo     ADD CONSTRAINT titulo_tipotitulo_fk         FOREIGN KEY (idTipoTitulo)         REFERENCES TipoTitulo(id);
-ALTER TABLE Titulo     ADD CONSTRAINT titulo_usuario_fk            FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
-ALTER TABLE Titulo     ADD CONSTRAINT titulo_categoria_fk          FOREIGN KEY (idCategoria)          REFERENCES Categoria(id);
-ALTER TABLE Parcela    ADD CONSTRAINT parcela_titulo_fk            FOREIGN KEY (idTitulo)             REFERENCES Titulo(id);
-ALTER TABLE Caixa      ADD CONSTRAINT caixa_usuario_fk             FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
-ALTER TABLE Caixa      ADD CONSTRAINT caixa_tipocaixa_fk           FOREIGN KEY (idTipoCaixa)          REFERENCES TipoCaixa(id);
-ALTER TABLE Caixa      ADD CONSTRAINT caixa_moeda_fk               FOREIGN KEY (codigoMoeda)          REFERENCES Moeda(codigo);
-ALTER TABLE Extrato    ADD CONSTRAINT extrato_caixa_fk             FOREIGN KEY (codigoCaixa)          REFERENCES Caixa(codigo);
-ALTER TABLE Extrato    ADD CONSTRAINT extrato_operacaocaixa_fk     FOREIGN KEY (idOperacaoCaixa)      REFERENCES OperacaoCaixa(id);
+ALTER TABLE Logradouro ADD CONSTRAINT logradouro_tipoLogradouro_fk   FOREIGN KEY (codigoTipoLogradouro) REFERENCES TipoLogradouro(codigo);
+ALTER TABLE Cambio     ADD CONSTRAINT cambio_moedaOrigem_fk          FOREIGN KEY (moedaOrigem)          REFERENCES Moeda(codigo);
+ALTER TABLE Cambio     ADD CONSTRAINT cambio_moedaDestino_fk         FOREIGN KEY (moedaDestino)         REFERENCES Moeda(codigo);
+ALTER TABLE Nacao      ADD CONSTRAINT nacao_moeda_fk                 FOREIGN KEY (codigoMoeda)          REFERENCES Moeda(codigo);
+ALTER TABLE Estado     ADD CONSTRAINT estado_nacao_fk                FOREIGN KEY (codigoNacao)          REFERENCES Nacao(codigo);
+ALTER TABLE Cidade     ADD CONSTRAINT cidade_estado_fk               FOREIGN KEY (idEstado)             REFERENCES Estado(id);
+ALTER TABLE CEP        ADD CONSTRAINT cep_cidade_fk                  FOREIGN KEY (idCidade)             REFERENCES Cidade(id);
+ALTER TABLE Usuario    ADD CONSTRAINT usuario_tipopessoa_fk          FOREIGN KEY (idTipoPessoa)         REFERENCES TipoPessoa(id);
+ALTER TABLE Usuario    ADD CONSTRAINT usuario_nivelacesso_fk         FOREIGN KEY (idNivelAcesso)        REFERENCES NivelAcesso(id);
+ALTER TABLE Endereco   ADD CONSTRAINT endereco_cep_fk                FOREIGN KEY (codigoCEP)            REFERENCES CEP(codigo);
+ALTER TABLE Endereco   ADD CONSTRAINT endereco_logradouro_fk         FOREIGN KEY (idLogradouro)         REFERENCES Logradouro(id);
+ALTER TABLE Endereco   ADD CONSTRAINT endereco_usuario_fk            FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
+ALTER TABLE Titulo     ADD CONSTRAINT titulo_tipotitulo_fk           FOREIGN KEY (idTipoTitulo)         REFERENCES TipoTitulo(id);
+ALTER TABLE Titulo     ADD CONSTRAINT titulo_usuario_fk              FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
+ALTER TABLE Titulo     ADD CONSTRAINT titulo_categoria_fk            FOREIGN KEY (idCategoria)          REFERENCES Categoria(id);
+ALTER TABLE Parcela    ADD CONSTRAINT parcela_titulo_fk              FOREIGN KEY (idTitulo)             REFERENCES Titulo(id);
+ALTER TABLE Caixa      ADD CONSTRAINT caixa_usuario_fk               FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
+ALTER TABLE Caixa      ADD CONSTRAINT caixa_tipocaixa_fk             FOREIGN KEY (idTipoCaixa)          REFERENCES TipoCaixa(id);
+ALTER TABLE Caixa      ADD CONSTRAINT caixa_moeda_fk                 FOREIGN KEY (codigoMoeda)          REFERENCES Moeda(codigo);
+ALTER TABLE Extrato    ADD CONSTRAINT extrato_caixa_fk               FOREIGN KEY (codigoCaixa)          REFERENCES Caixa(codigo);
+ALTER TABLE Extrato    ADD CONSTRAINT extrato_operacaocaixa_fk       FOREIGN KEY (idOperacaoCaixa)      REFERENCES OperacaoCaixa(id);
+ALTER TABLE Cobranca   ADD CONSTRAINT cobranca_usuariosolicitante_fk FOREIGN KEY (idUsuarioSolicitante) REFERENCES Usuario(id);
+ALTER TABLE Cobranca   ADD CONSTRAINT cobranca_usuarioPagador_fk     FOREIGN KEY (idUsuarioPagador)     REFERENCES Usuario(id);
+ALTER TABLE Cobranca   ADD CONSTRAINT cobranca_titulo_fk             FOREIGN KEY (idTitulo)             REFERENCES Titulo(id);
 ------------------ { Views } -----------------
 CREATE VIEW vw_usuarios_ativos AS
   SELECT id, nome, documento, telefone, email, senha, idtipopessoa, idnivelacesso, datacriacao, dataalteracao
@@ -378,3 +394,17 @@ CREATE VIEW vw_extrato_final AS
      AND NOT oc.excluido
    GROUP BY c.nome, oc.descricao
    ORDER BY c.nome ASC, oc.descricao ASC;
+
+CREATE VIEW vw_cobrancas AS
+  SELECT us.nome as Solicitante,
+       up.nome as Pagador,
+       SUM(p.valor),
+  CASE
+       WHEN p.dataPagamento IS NOT NULL THEN "Pago"
+       ELSE "Aguardando Pagamento"
+   END AS Status
+  FROM COBRANCA c
+  JOIN Usuario up on (up.id = c.idUsuarioPagador)
+  JOIN Usuario us on (us.id = c.idUsuarioSolicitante)
+  JOIN Parcela p on (p.idTitulo = c.idTitulo)
+ GROUP BY Status, Solicitante, Pagador
