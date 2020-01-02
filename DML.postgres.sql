@@ -33,6 +33,7 @@ CREATE SEQUENCE seq_caixa_codigo          START 1;
 CREATE SEQUENCE seq_operacaocaixa_id      START 1;
 CREATE SEQUENCE seq_extrato_codigo        START 1;
 CREATE SEQUENCE seq_cobranca_codigo       START 1;
+CREATE SEQUENCE seq_notificacao_codigo    START 1;
 
 ---------------- { Tables } -----------------------------------------------------
 CREATE TABLE TipoPessoa (
@@ -274,8 +275,19 @@ CREATE TABLE Cobranca (
   idTitulo             INTEGER       NOT NULL,
   dataCriacao          TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   dataAlteracao        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  ativo                BOOLEAN       NOT NULL DEFAULT TRUE,
+  ativo                BOOLEAN       NOT NULL DEFAULT TRUE, -- Entende-se por pago ou não
   excluido             BOOLEAN       NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE Notificacao (
+  codigo               INTEGER       NOT NULL DEFAULT nextval('seq_notificacao_codigo'),
+  descricao            VARCHAR(100)  NOT NULL,
+  idUsuario            INTEGER       NOT NULL,
+  mensagem             VARCHAR(100)  NOT NULL, -- Mensagem que um usuário pode enviar a outro
+  dataCriacao          TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  dataAlteracao        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ativo                BOOLEAN       NOT NULL DEFAULT TRUE, -- Entende-se por lido ou não lido
+  excluido             BOOLEAN       NOT NULL DEFAULT FAL SE
 );
 
 -------------- { Constraints } ----------------
@@ -302,31 +314,56 @@ ALTER TABLE Caixa          ADD CONSTRAINT caixa_pk          PRIMARY KEY (codigo)
 ALTER TABLE OperacaoCaixa  ADD CONSTRAINT operacaocaixa_pk  PRIMARY KEY (id);
 ALTER TABLE Extrato        ADD CONSTRAINT extrato_pk        PRIMARY KEY (codigo);
 ALTER TABLE Cobranca       ADD CONSTRAINT cobranca_pk       PRIMARY KEY (codigo);
+ALTER TABLE Notificacao    ADD CONSTRAINT notificacao_pk    PRIMARY KEY (codigo);
 -------------- { Foreign Key } --------------
-ALTER TABLE Logradouro ADD CONSTRAINT logradouro_tipoLogradouro_fk   FOREIGN KEY (codigoTipoLogradouro) REFERENCES TipoLogradouro(codigo);
-ALTER TABLE Cambio     ADD CONSTRAINT cambio_moedaOrigem_fk          FOREIGN KEY (moedaOrigem)          REFERENCES Moeda(codigo);
-ALTER TABLE Cambio     ADD CONSTRAINT cambio_moedaDestino_fk         FOREIGN KEY (moedaDestino)         REFERENCES Moeda(codigo);
-ALTER TABLE Nacao      ADD CONSTRAINT nacao_moeda_fk                 FOREIGN KEY (codigoMoeda)          REFERENCES Moeda(codigo);
-ALTER TABLE Estado     ADD CONSTRAINT estado_nacao_fk                FOREIGN KEY (codigoNacao)          REFERENCES Nacao(codigo);
-ALTER TABLE Cidade     ADD CONSTRAINT cidade_estado_fk               FOREIGN KEY (idEstado)             REFERENCES Estado(id);
-ALTER TABLE CEP        ADD CONSTRAINT cep_cidade_fk                  FOREIGN KEY (idCidade)             REFERENCES Cidade(id);
-ALTER TABLE Usuario    ADD CONSTRAINT usuario_tipopessoa_fk          FOREIGN KEY (idTipoPessoa)         REFERENCES TipoPessoa(id);
-ALTER TABLE Usuario    ADD CONSTRAINT usuario_nivelacesso_fk         FOREIGN KEY (idNivelAcesso)        REFERENCES NivelAcesso(id);
-ALTER TABLE Endereco   ADD CONSTRAINT endereco_cep_fk                FOREIGN KEY (codigoCEP)            REFERENCES CEP(codigo);
-ALTER TABLE Endereco   ADD CONSTRAINT endereco_logradouro_fk         FOREIGN KEY (idLogradouro)         REFERENCES Logradouro(id);
-ALTER TABLE Endereco   ADD CONSTRAINT endereco_usuario_fk            FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
-ALTER TABLE Titulo     ADD CONSTRAINT titulo_tipotitulo_fk           FOREIGN KEY (idTipoTitulo)         REFERENCES TipoTitulo(id);
-ALTER TABLE Titulo     ADD CONSTRAINT titulo_usuario_fk              FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
-ALTER TABLE Titulo     ADD CONSTRAINT titulo_categoria_fk            FOREIGN KEY (idCategoria)          REFERENCES Categoria(id);
-ALTER TABLE Parcela    ADD CONSTRAINT parcela_titulo_fk              FOREIGN KEY (idTitulo)             REFERENCES Titulo(id);
-ALTER TABLE Caixa      ADD CONSTRAINT caixa_usuario_fk               FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
-ALTER TABLE Caixa      ADD CONSTRAINT caixa_tipocaixa_fk             FOREIGN KEY (idTipoCaixa)          REFERENCES TipoCaixa(id);
-ALTER TABLE Caixa      ADD CONSTRAINT caixa_moeda_fk                 FOREIGN KEY (codigoMoeda)          REFERENCES Moeda(codigo);
-ALTER TABLE Extrato    ADD CONSTRAINT extrato_caixa_fk               FOREIGN KEY (codigoCaixa)          REFERENCES Caixa(codigo);
-ALTER TABLE Extrato    ADD CONSTRAINT extrato_operacaocaixa_fk       FOREIGN KEY (idOperacaoCaixa)      REFERENCES OperacaoCaixa(id);
-ALTER TABLE Cobranca   ADD CONSTRAINT cobranca_usuariosolicitante_fk FOREIGN KEY (idUsuarioSolicitante) REFERENCES Usuario(id);
-ALTER TABLE Cobranca   ADD CONSTRAINT cobranca_usuarioPagador_fk     FOREIGN KEY (idUsuarioPagador)     REFERENCES Usuario(id);
-ALTER TABLE Cobranca   ADD CONSTRAINT cobranca_titulo_fk             FOREIGN KEY (idTitulo)             REFERENCES Titulo(id);
+ALTER TABLE Logradouro  ADD CONSTRAINT logradouro_tipoLogradouro_fk   FOREIGN KEY (codigoTipoLogradouro) REFERENCES TipoLogradouro(codigo);
+ALTER TABLE Cambio      ADD CONSTRAINT cambio_moedaOrigem_fk          FOREIGN KEY (moedaOrigem)          REFERENCES Moeda(codigo);
+ALTER TABLE Cambio      ADD CONSTRAINT cambio_moedaDestino_fk         FOREIGN KEY (moedaDestino)         REFERENCES Moeda(codigo);
+ALTER TABLE Nacao       ADD CONSTRAINT nacao_moeda_fk                 FOREIGN KEY (codigoMoeda)          REFERENCES Moeda(codigo);
+ALTER TABLE Estado      ADD CONSTRAINT estado_nacao_fk                FOREIGN KEY (codigoNacao)          REFERENCES Nacao(codigo);
+ALTER TABLE Cidade      ADD CONSTRAINT cidade_estado_fk               FOREIGN KEY (idEstado)             REFERENCES Estado(id);
+ALTER TABLE CEP         ADD CONSTRAINT cep_cidade_fk                  FOREIGN KEY (idCidade)             REFERENCES Cidade(id);
+ALTER TABLE Usuario     ADD CONSTRAINT usuario_tipopessoa_fk          FOREIGN KEY (idTipoPessoa)         REFERENCES TipoPessoa(id);
+ALTER TABLE Usuario     ADD CONSTRAINT usuario_nivelacesso_fk         FOREIGN KEY (idNivelAcesso)        REFERENCES NivelAcesso(id);
+ALTER TABLE Endereco    ADD CONSTRAINT endereco_cep_fk                FOREIGN KEY (codigoCEP)            REFERENCES CEP(codigo);
+ALTER TABLE Endereco    ADD CONSTRAINT endereco_logradouro_fk         FOREIGN KEY (idLogradouro)         REFERENCES Logradouro(id);
+ALTER TABLE Endereco    ADD CONSTRAINT endereco_usuario_fk            FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
+ALTER TABLE Titulo      ADD CONSTRAINT titulo_tipotitulo_fk           FOREIGN KEY (idTipoTitulo)         REFERENCES TipoTitulo(id);
+ALTER TABLE Titulo      ADD CONSTRAINT titulo_usuario_fk              FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
+ALTER TABLE Titulo      ADD CONSTRAINT titulo_categoria_fk            FOREIGN KEY (idCategoria)          REFERENCES Categoria(id);
+ALTER TABLE Parcela     ADD CONSTRAINT parcela_titulo_fk              FOREIGN KEY (idTitulo)             REFERENCES Titulo(id);
+ALTER TABLE Caixa       ADD CONSTRAINT caixa_usuario_fk               FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
+ALTER TABLE Caixa       ADD CONSTRAINT caixa_tipocaixa_fk             FOREIGN KEY (idTipoCaixa)          REFERENCES TipoCaixa(id);
+ALTER TABLE Caixa       ADD CONSTRAINT caixa_moeda_fk                 FOREIGN KEY (codigoMoeda)          REFERENCES Moeda(codigo);
+ALTER TABLE Extrato     ADD CONSTRAINT extrato_caixa_fk               FOREIGN KEY (codigoCaixa)          REFERENCES Caixa(codigo);
+ALTER TABLE Extrato     ADD CONSTRAINT extrato_operacaocaixa_fk       FOREIGN KEY (idOperacaoCaixa)      REFERENCES OperacaoCaixa(id);
+ALTER TABLE Cobranca    ADD CONSTRAINT cobranca_usuariosolicitante_fk FOREIGN KEY (idUsuarioSolicitante) REFERENCES Usuario(id);
+ALTER TABLE Cobranca    ADD CONSTRAINT cobranca_usuarioPagador_fk     FOREIGN KEY (idUsuarioPagador)     REFERENCES Usuario(id);
+ALTER TABLE Cobranca    ADD CONSTRAINT cobranca_titulo_fk             FOREIGN KEY (idTitulo)             REFERENCES Titulo(id);
+ALTER TABLE Notificacao ADD CONSTRAINT notificacao_usuario_fk         FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
+------------------ { Stored Procedures } -----------------
+------------------ { Stored Functions } -----------------
+CREATE OR REPLACE FUNCTION notif_novousuario()
+RETURNS TRIGGER AS
+$$
+DECLARE
+  V_DESCRICAO Notificacao.descricao%type;
+  V_MENSAGEM  Notificacao.mensagem%type;
+BEGIN
+  V_DESCRICAO := 'Boas vindas ao Superavit';
+  V_MENSAGEM  := 'Esperamos que tenha muitos Superavits';
+
+  INSERT INTO Notificacao(descricao, idUsuario, mensagem)
+    VALUES(V_DESCRICAO, NEW.id, V_MENSAGEM);
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+------------------ { Triggers } -----------------
+CREATE OR REPLACE TRIGGER tgr_novousuario
+  AFTER INSERT ON Usuario
+  FOR EACH ROW
+  EXECUTE FUNCTION notif_novousuario;
 ------------------ { Views } -----------------
 CREATE VIEW vw_usuarios_ativos AS
   SELECT id, nome, documento, telefone, email, senha, idtipopessoa, idnivelacesso, datacriacao, dataalteracao
@@ -408,3 +445,13 @@ CREATE VIEW vw_cobrancas AS
   JOIN Usuario us on (us.id = c.idUsuarioSolicitante)
   JOIN Parcela p on (p.idTitulo = c.idTitulo)
  GROUP BY Status, Solicitante, Pagador
+
+CREATE VIEW vw_notif_nao_lidas AS
+  SELECT descricao, idUsuario, mensagem
+    FROM Notificacao
+   WHERE ativo = TRUE;
+
+CREATE VIEW vw_notif_lidas AS
+  SELECT descricao, idUsuario, mensagem
+    FROM Notificacao
+   WHERE ativo = FALSE;

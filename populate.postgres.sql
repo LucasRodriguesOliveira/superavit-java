@@ -164,6 +164,7 @@ INSERT INTO NivelAcesso (descricao, prioridade)
 
 INSERT INTO Usuario (nome, documento, telefone, email, senha, idTipoPessoa, idNivelAcesso)
   VALUES ('Lucas Oliveira', '11122233344', '', 'lucas@email.com','admin', 1, 1),
+         ('Superavit', '', '', 'superavit@email.com','admin', 2, 1),
          ('João da Silva', '12345678900', '', 'joao@email.com','j.silva', 1, 2),
          ('Ana Flávia', '12121234344', '', 'ana@email.com','ana', 1, 3),
          ('Maria Clara', '77777788899', '', 'maria@email.com','maria', 1, 3);
