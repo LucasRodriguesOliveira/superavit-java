@@ -287,7 +287,17 @@ CREATE TABLE Notificacao (
   dataCriacao          TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   dataAlteracao        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   ativo                BOOLEAN       NOT NULL DEFAULT TRUE, -- Entende-se por lido ou não lido
-  excluido             BOOLEAN       NOT NULL DEFAULT FAL SE
+  excluido             BOOLEAN       NOT NULL DEFAULT FALSE
+);
+
+-- Funciona como uma lista de amigos
+-- a coluna 'ativo' não se enquadra em uso nessa tabela
+CREATE TABLE Contato (
+  idUsuario1           INTEGER       NOT NULL,
+  idUsuario2           INTEGER       NOT NULL,
+  dataCriacao          TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  dataAlteracao        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  excluido             BOOLEAN       NOT NULL DEFAULT FALSE
 );
 
 -------------- { Constraints } ----------------
@@ -315,6 +325,7 @@ ALTER TABLE OperacaoCaixa  ADD CONSTRAINT operacaocaixa_pk  PRIMARY KEY (id);
 ALTER TABLE Extrato        ADD CONSTRAINT extrato_pk        PRIMARY KEY (codigo);
 ALTER TABLE Cobranca       ADD CONSTRAINT cobranca_pk       PRIMARY KEY (codigo);
 ALTER TABLE Notificacao    ADD CONSTRAINT notificacao_pk    PRIMARY KEY (codigo);
+ALTER TABLE Contato        ADD CONSTRAINT contato_pk        PRIMARY KEY (idUsuario1, idUsuario2);
 -------------- { Foreign Key } --------------
 ALTER TABLE Logradouro  ADD CONSTRAINT logradouro_tipoLogradouro_fk   FOREIGN KEY (codigoTipoLogradouro) REFERENCES TipoLogradouro(codigo);
 ALTER TABLE Cambio      ADD CONSTRAINT cambio_moedaOrigem_fk          FOREIGN KEY (moedaOrigem)          REFERENCES Moeda(codigo);
@@ -341,6 +352,8 @@ ALTER TABLE Cobranca    ADD CONSTRAINT cobranca_usuariosolicitante_fk FOREIGN KE
 ALTER TABLE Cobranca    ADD CONSTRAINT cobranca_usuarioPagador_fk     FOREIGN KEY (idUsuarioPagador)     REFERENCES Usuario(id);
 ALTER TABLE Cobranca    ADD CONSTRAINT cobranca_titulo_fk             FOREIGN KEY (idTitulo)             REFERENCES Titulo(id);
 ALTER TABLE Notificacao ADD CONSTRAINT notificacao_usuario_fk         FOREIGN KEY (idUsuario)            REFERENCES Usuario(id);
+ALTER TABLE Contato     ADD CONSTRAINT contato_usuario1_fk            FOREIGN KEY (idUsuario1)           REFERENCES Usuario(id);
+ALTER TABLE Contato     ADD CONSTRAINT contato_usuario2_fk            FOREIGN KEY (idUsuario2)           REFERENCES Usuario(id);
 ------------------ { Stored Procedures } -----------------
 ------------------ { Stored Functions } -----------------
 CREATE OR REPLACE FUNCTION notif_novousuario()
@@ -360,10 +373,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 ------------------ { Triggers } -----------------
-CREATE OR REPLACE TRIGGER tgr_novousuario
+CREATE TRIGGER tgr_novousuario
   AFTER INSERT ON Usuario
   FOR EACH ROW
-  EXECUTE FUNCTION notif_novousuario;
+  EXECUTE PROCEDURE notif_novousuario();
 ------------------ { Views } -----------------
 CREATE VIEW vw_usuarios_ativos AS
   SELECT id, nome, documento, telefone, email, senha, idtipopessoa, idnivelacesso, datacriacao, dataalteracao
