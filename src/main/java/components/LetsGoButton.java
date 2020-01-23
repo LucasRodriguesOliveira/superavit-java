@@ -6,13 +6,14 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import javax.swing.ImageIcon;
 
 /**
  *
  * @author Lucas Oliveira
  */
-public class LetsGoButton extends Button {
+public class LetsGoButton extends Button implements MouseListener {
     
     public LetsGoButton(int x, int y, int w, int h, String tooltip, Container parent) {
         super(parent);
@@ -54,11 +55,15 @@ public class LetsGoButton extends Button {
     @Override
     public void mouseEntered(MouseEvent e) {
         this.setIcon(this.hover_image);
+        this.setSize(LETSGO_BUTTON.W_HOVER, LETSGO_BUTTON.H_HOVER);
+        this.setLocation(LETSGO_BUTTON.X_HOVER, LETSGO_BUTTON.Y_HOVER);
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
         this.setIcon(this.default_image);
+        this.setSize(LETSGO_BUTTON.W, LETSGO_BUTTON.H);
+        this.setLocation(LETSGO_BUTTON.X, LETSGO_BUTTON.Y);
     }
     
 }

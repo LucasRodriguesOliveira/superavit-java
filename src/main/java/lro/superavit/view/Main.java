@@ -21,13 +21,14 @@ public class Main extends JFrame {
     }
     
     private void initProps() {
-        this.setTitle(MAIN.TITLE);
-        this.setSize(MAIN.WIDTH, MAIN.HEIGHT);
-        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        this.setResizable(false);
-        this.setIconImage((new ImageIcon(getClass().getResource(MAIN.ICON))).getImage());
-        this.setUndecorated(true);
+        setTitle(MAIN.TITLE);
+        setSize(MAIN.WIDTH, MAIN.HEIGHT);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setResizable(false);
+        setIconImage((new ImageIcon(getClass().getResource(MAIN.ICON))).getImage());
+        setUndecorated(true);
         centralize();
+        setLocationRelativeTo(null);
         
         if(null == MainController.Controller)
             MainController.Controller = new MainController();

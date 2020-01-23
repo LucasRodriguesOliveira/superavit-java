@@ -2,6 +2,7 @@ package controllers;
 
 import java.awt.CardLayout;
 import java.awt.Container;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import lro.superavit.view.BaseView;
 
@@ -36,7 +37,7 @@ public class LoginController {
     }
             
     public void initFields() {
-        System.out.println("");
+        System.out.println("Init method");
     }
     
     public ArrayList<BaseView> getFields() {

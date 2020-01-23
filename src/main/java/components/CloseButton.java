@@ -4,13 +4,14 @@ import constants.InitialConstants.CLOSE_BUTTON;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import javax.swing.ImageIcon;
 
 /**
  *
  * @author Lucas Oliveira
  */
-public class CloseButton extends Button {
+public class CloseButton extends Button implements MouseListener {
     
     public CloseButton(int x, int y, int w, int h, String tooltip, Container parent) {
         super(parent);
@@ -18,23 +19,18 @@ public class CloseButton extends Button {
         setConfigs();
     }
 
-    @Override
     public void mouseClicked(MouseEvent e) {
         System.exit(0);
     }
 
-    @Override
     public void mousePressed(MouseEvent e) {}
 
-    @Override
     public void mouseReleased(MouseEvent e) {}
 
-    @Override
     public void mouseEntered(MouseEvent e) {
         this.setIcon(this.hover_image);
     }
 
-    @Override
     public void mouseExited(MouseEvent e) {
         this.setIcon(this.default_image);
     }

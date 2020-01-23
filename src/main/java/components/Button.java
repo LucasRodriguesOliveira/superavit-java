@@ -1,14 +1,13 @@
 package components;
 
 import java.awt.Container;
-import java.awt.event.MouseListener;
 import javax.swing.ImageIcon;
 
 /**
  *
  * @author Lucas Oliveira
  */
-public abstract class Button extends BaseComponent implements MouseListener {
+public abstract class Button extends BaseComponent {
     protected ImageIcon hover_image;
     protected String tooltip;
     private Container parent;
