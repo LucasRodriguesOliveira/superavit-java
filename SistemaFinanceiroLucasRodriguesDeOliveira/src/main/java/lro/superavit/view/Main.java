@@ -6,12 +6,14 @@ import javax.swing.JFrame;
 import javax.swing.ImageIcon;
 import controllers.MainController;
 import constants.MainConstants.MAIN;
+import javax.swing.JPanel;
 
 /**
  *
  * @author Lucas Oliveira
  */
 public class Main extends JFrame {
+    private JPanel Container;
     
     public Main(){
       initProps();
@@ -28,7 +30,13 @@ public class Main extends JFrame {
         centralize();
         
         if(null == MainController.Controller)
-            MainController.Controller = new MainController(getContentPane());
+            MainController.Controller = new MainController();
+        
+        MainController.Controller.generateComponents();
+        
+        Container = new JPanel(MainController.Controller.getLayout());
+        Container.setBounds(0, 0, MAIN.WIDTH, MAIN.HEIGHT);
+        MainController.Controller.initViews(Container);
     }
 
     private void centralize() {
@@ -38,9 +46,11 @@ public class Main extends JFrame {
     }
 
     private void generateComponents() {
-        this.setLayout(MainController.Controller.getLayout());
         MainController.Controller.getViews().forEach((vw) -> {
-            getContentPane().add(vw, vw.getViewName());
+            Container.add(vw.getViewName(), vw);
         });
+        
+        getContentPane().setLayout(null);
+        getContentPane().add(Container);
     }
 }

@@ -1,5 +1,6 @@
 package lro.superavit.view;
 
+import constants.MainConstants.MAIN;
 import java.awt.Container;
 import java.util.ArrayList;
 import javax.swing.JLabel;
@@ -17,6 +18,7 @@ public abstract class BaseView extends JPanel {
     public BaseView(String name, Container parent) {
         this.name = name;
         this.parent = parent;
+        this.setBounds(0, 0, MAIN.WIDTH, MAIN.HEIGHT);
     }
     
     public ArrayList<JLabel> getItens() {

@@ -13,6 +13,8 @@ public abstract class Button extends BaseComponent implements MouseListener {
     protected String tooltip;
     private Container parent;
     
+    public Button(){}
+    
     public Button(Container parent) {
         this.parent = parent;
     }

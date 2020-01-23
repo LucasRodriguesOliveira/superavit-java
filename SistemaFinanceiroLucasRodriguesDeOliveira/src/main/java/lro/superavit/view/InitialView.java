@@ -11,21 +11,20 @@ import java.awt.Container;
  *
  * @author Lucas Oliveira
  */
-public final class Initial extends BaseView {  
-    public Initial(Container parent){
+public final class InitialView extends BaseView {  
+    public InitialView(Container parent){
       super(INITIAL.NAME, parent);
       this.initComponents();
-      this.initProps();
     }
 
     private CloseButton getCloseButton() {
         return new CloseButton(CLOSE_BUTTON.X, CLOSE_BUTTON.Y,
-                  CLOSE_BUTTON.W, CLOSE_BUTTON.H, CLOSE_BUTTON.TOOLTIP, this);
+                  CLOSE_BUTTON.W, CLOSE_BUTTON.H, CLOSE_BUTTON.TOOLTIP, this.parent);
     }
     
     public LetsGoButton getLetsGoButton() {
         return new LetsGoButton(LETSGO_BUTTON.X, LETSGO_BUTTON.Y,
-                  LETSGO_BUTTON.W, LETSGO_BUTTON.H, LETSGO_BUTTON.TOOLTIP, this);
+                  LETSGO_BUTTON.W, LETSGO_BUTTON.H, LETSGO_BUTTON.TOOLTIP, this.parent);
     }
     
     private Background getBackgroundInitial() {
@@ -36,5 +35,6 @@ public final class Initial extends BaseView {
       this.itens.add(getLetsGoButton());
       this.itens.add(getCloseButton());
       this.itens.add(getBackgroundInitial());
+      this.initProps();
     }
 }
