@@ -2,9 +2,9 @@ package controllers;
 
 import java.awt.CardLayout;
 import java.awt.Container;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import lro.superavit.view.BaseView;
+import lro.superavit.view.LoginView;
 
 /**
  *
@@ -15,9 +15,11 @@ public class LoginController {
     private CardLayout LayoutManager;
     public static LoginController Controller;
     private Container form;
+    private final LoginView view;
     
-    public LoginController() {
+    public LoginController(LoginView view) {
         form_fields = new ArrayList<>();
+        this.view = view;
     }
 
     public CardLayout getLayoutManager() {
@@ -26,6 +28,10 @@ public class LoginController {
 
     public void setLayoutManager(CardLayout LayoutManager) {
         this.LayoutManager = LayoutManager;
+    }
+    
+    public void changeState() {
+        view.toggleActiveForm();
     }
 
     public Container getForm() {

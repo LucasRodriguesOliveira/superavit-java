@@ -19,18 +19,23 @@ public class CloseButton extends Button implements MouseListener {
         setConfigs();
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         System.exit(0);
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {}
 
+    @Override
     public void mouseReleased(MouseEvent e) {}
 
+    @Override
     public void mouseEntered(MouseEvent e) {
         this.setIcon(this.hover_image);
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
         this.setIcon(this.default_image);
     }

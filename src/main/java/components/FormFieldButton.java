@@ -1,17 +1,18 @@
 package components;
 
 import controllers.LoginController;
-import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.ImageIcon;
-
+//Por algum motivo, ao fazer com que FormFieldButton herde de Button,
+// o Evento de MouseEvent, não é capturado
+// Apesar de funcionar perfeitamente no component CloseButton e LetsGoButton
 /**
  *
  * @author Lucas Oliveira
  */
-public class FormFieldButton extends Button {
+public class FormFieldButton extends BaseComponent {
     private boolean active;
     private ImageIcon active_image;
     private LoginController controller;
@@ -42,21 +43,25 @@ public class FormFieldButton extends Button {
         addMouseListener(new Actions(this));
     }
     
-    public void changeState(boolean state) {
-        this.active = state;
+    public void toggleState() {
+        this.active = !this.active;
         
         setIcon(active ? active_image : default_image);
     }
     
     class Actions extends MouseAdapter {
-        private final Button parent;
-        public Actions(Button parent) {
+        private final FormFieldButton parent;
+        public Actions(FormFieldButton parent) {
             this.parent = parent;
         }
         
         @Override
+        public void mouseClicked(MouseEvent e) {
+            controller.changeState();
+        }
+        
+        @Override
         public void mouseEntered(MouseEvent e) {
-            parent.setIcon(active_image);
             if(active) {
                 parent.setIcon(active_image);
                 parent.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));

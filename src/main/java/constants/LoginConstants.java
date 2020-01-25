@@ -57,7 +57,7 @@ public abstract class LoginConstants {
     public abstract class LOGIN_FIELD {
         public static final int X = 300;
         public static final int Y = 230;
-        public static final int W = 368;
+        public static final int W = 350;
         public static final int H = 138;
         public static final String IMAGE = "/Botão de Acesso";
         public static final String IMAGE_EXTENSION = ".png";

@@ -13,6 +13,7 @@ import constants.LoginConstants.LOGIN_FIELD;
 import constants.LoginConstants.SIGNUP_FIELD;
 import controllers.LoginController;
 import java.awt.Container;
+import java.awt.event.MouseListener;
 import javax.swing.JPanel;
 /**
  *
@@ -56,10 +57,15 @@ public class LoginView extends BaseView {
                 SIGNUP_FIELD.W, SIGNUP_FIELD.H, false, SIGNUP_FIELD.IMAGE,
                 LoginController.Controller);
     }
+    
+    public void toggleActiveForm() {
+        ((FormFieldButton) itens.get(2)).toggleState();
+        ((FormFieldButton) itens.get(3)).toggleState();
+    }
 
     private void initComponents() {
         if(LoginController.Controller == null)
-            LoginController.Controller = new LoginController();
+            LoginController.Controller = new LoginController(this);
         
         LoginController.Controller.generateComponents();
         form = new JPanel(LoginController.Controller.getLayoutManager());
