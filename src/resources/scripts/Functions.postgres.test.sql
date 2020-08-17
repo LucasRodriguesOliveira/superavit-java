@@ -236,6 +236,39 @@ BEGIN
   ASSERT v_nomelogradouro = v_nome, 'O nome do logradouro deve ser equivalente';
 END;
 $$ LANGUAGE plpgsql;
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION test_insereCep ()
+RETURNS void AS $$
+DECLARE
+  v_codigo   CEP.CODIGO%TYPE;
+  v_idcidade CEP.IDCIDADE%TYPE;
+  v_cep      CEP%ROWTYPE;
+BEGIN
+  SELECT ID
+    INTO v_idcidade
+    FROM CIDADE
+   LIMIT 1;
+
+  v_codigo := 'xxxxxxxx';
+
+  PERFORM insereCep(v_codigo, v_idcidade);
+
+  SELECT codigo,
+         idcidade
+    INTO v_cep.codigo,
+         v_cep.idcidade
+    FROM CEP
+   WHERE codigo = v_codigo;
+  
+
+  ASSERT v_cep.codigo IS NOT NULL, 'O codigo do cep não deve ser nulo';
+  ASSERT v_cep.idcidade IS NOT NULL, 'O codigo da cidade não deve ser nulo';
+
+  ASSERT v_cep.codigo = v_codigo, 'O codigo do cep deve ser equivalente ao cadastrado';
+  ASSERT v_cep.idcidade = v_idcidade, 'O codigo da cidade deve ser equivalente ao cadastrado';
+END;
+$$ LANGUAGE plpgsql;
 
 ---------------------- { Engine } -------------------------------
 CREATE OR REPLACE FUNCTION execute_test()
@@ -260,5 +293,8 @@ BEGIN
 
   RAISE NOTICE ' - test_insereLogradouro';
   PERFORM test_insereLogradouro();
+
+  RAISE NOTICE ' - test_insereCep';
+  PERFORM test_insereCep();
 END;
 $$ LANGUAGE PLPGSQL;
