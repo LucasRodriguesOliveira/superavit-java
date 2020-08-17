@@ -108,7 +108,7 @@ $$ LANGUAGE PLPGSQL;
 ------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION insereEndereco(
   i_numero       ENDERECO.NUMERO%TYPE,
-  i_bairro       ENDERECO.BAIRROP%TYPE,
+  i_bairro       ENDERECO.BAIRRO%TYPE,
   i_complemento  ENDERECO.COMPLEMENTO%TYPE,
   i_referencia   ENDERECO.REFERENCIA%TYPE,
   i_codcep       ENDERECO.CODIGOCEP%TYPE,

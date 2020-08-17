@@ -52,6 +52,82 @@ EXCEPTION
      WHERE USUARIO.ID     = v_usuario.ID;
 END;
 $$ LANGUAGE PLPGSQL;
+--------------------------------------------------------------------
+-------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION setup_Cep(
+  i_codigo        CEP.CODIGO%TYPE          DEFAULT NULL,
+  i_idcidade      CEP.IDCIDADE%TYPE        DEFAULT NULL,
+  i_datacriacao   CEP.DATACRIACAO%TYPE     DEFAULT NULL,
+  i_dataalteracao CEP.DATAALTERACAO%TYPE   DEFAULT NULL,
+  i_ativo         CEP.ATIVO%TYPE           DEFAULT NULL,
+  i_excluido      CEP.EXCLUIDO%TYPE        DEFAULT NULL
+)
+RETURNS VOID AS $$
+DECLARE
+  v_cep CEP%ROWTYPE;
+BEGIN
+  SELECT ID
+    INTO v_cep.idcidade
+    FROM CIDADE
+   LIMIT 1;
+
+  v_cep.codigo        := COALESCE(i_codigo, 'xxxxxxxx');
+  v_cep.idcidade      := COALESCE(i_idcidade, v_cep.idcidade);
+  v_cep.datacriacao   := COALESCE(i_datacriacao, CURRENT_TIMESTAMP);
+  v_cep.dataalteracao := COALESCE(i_dataalteracao, CURRENT_TIMESTAMP);
+  v_cep.ativo         := COALESCE(i_ativo, TRUE);
+  v_cep.excluido      := COALESCE(i_excluido, FALSE);
+
+  INSERT INTO CEP VALUES (v_cep.*);
+EXCEPTION
+  WHEN UNIQUE_VIOLATION THEN
+    UPDATE CEP
+       SET codigo        = v_cep.codigo,
+           idcidade      = v_cep.idcidade,
+           datacriacao   = v_cep.datacriacao,
+           dataalteracao = v_cep.dataalteracao,
+           ativo         = v_cep.ativo,
+           excluido      = v_cep.excluido
+     WHERE CEP.CODIGO    = v_cep.codigo;
+END;
+$$ LANGUAGE PLPGSQL;
+--------------------------------------------------------------------
+-------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION setup_Logradouro(
+  i_id                   LOGRADOURO.ID%TYPE                   DEFAULT NULL,
+  i_nome                 LOGRADOURO.NOME%TYPE                 DEFAULT NULL,
+  i_codigotipologradouro LOGRADOURO.CODIGOTIPOLOGRADOURO%TYPE DEFAULT NULL,
+  i_datacriacao          LOGRADOURO.DATACRIACAO%TYPE          DEFAULT NULL,
+  i_dataalteracao        LOGRADOURO.DATAALTERACAO%TYPE        DEFAULT NULL,
+  i_ativo                LOGRADOURO.ATIVO%TYPE                DEFAULT NULL,
+  i_excluido             LOGRADOURO.EXCLUIDO%TYPE             DEFAULT NULL
+)
+RETURNS VOID AS $$
+DECLARE
+  v_logradouro LOGRADOURO%ROWTYPE;
+BEGIN
+  v_logradouro.id                   := COALESCE(i_id, -1);
+  v_logradouro.nome                 := COALESCE(i_nome, 'Rua de Teste');
+  v_logradouro.codigotipologradouro := COALESCE(i_codigotipologradouro, 1);
+  v_logradouro.datacriacao          := COALESCE(i_datacriacao, CURRENT_TIMESTAMP);
+  v_logradouro.dataalteracao        := COALESCE(i_dataalteracao, CURRENT_TIMESTAMP);
+  v_logradouro.ativo                := COALESCE(i_ativo, TRUE);
+  v_logradouro.excluido             := COALESCE(i_excluido, FALSE);
+
+  INSERT INTO LOGRADOURO VALUES (v_logradouro.*);
+EXCEPTION
+  WHEN UNIQUE_VIOLATION THEN
+    UPDATE LOGRADOURO
+       SET id                   = v_logradouro.id,
+           nome                 = v_logradouro.nome,
+           codigotipologradouro = v_logradouro.codigotipologradouro,
+           datacriacao          = v_logradouro.datacriacao,
+           dataalteracao        = v_logradouro.dataalteracao,
+           ativo                = v_logradouro.ativo,
+           excluido             = v_logradouro.excluido
+     WHERE LOGRADOURO.ID        = v_logradouro.codigo;
+END;
+$$ LANGUAGE PLPGSQL;
 --------------------- { Tests } ------------------------------------------
 CREATE OR REPLACE FUNCTION test_carregaUsuario()
 RETURNS VOID AS $$
@@ -269,7 +345,59 @@ BEGIN
   ASSERT v_cep.idcidade = v_idcidade, 'O codigo da cidade deve ser equivalente ao cadastrado';
 END;
 $$ LANGUAGE plpgsql;
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION test_insereEndereco ()
+RETURNS void AS $$
+DECLARE
+  v_numero       ENDERECO.NUMERO%TYPE;
+  v_bairro       ENDERECO.BAIRRO%TYPE;
+  v_complemento  ENDERECO.COMPLEMENTO%TYPE;
+  v_referencia   ENDERECO.REFERENCIA%TYPE;
+  v_codcep       ENDERECO.CODIGOCEP%TYPE;
+  v_idlogradouro ENDERECO.IDLOGRADOURO%TYPE;
+  v_idusuario    ENDERECO.IDUSUARIO%TYPE;
+  v_endereco     ENDERECO%ROWTYPE;
+BEGIN
+  v_numero       := -1;
+  v_bairro       := 'Jardim de Teste';
+  v_codcep       := 'xxxxxxxx';
+  v_idlogradouro := -1;
+  v_idusuario    := -1;
 
+  PERFORM setup_Cep(i_codigo => v_codcep);
+  PERFORM setup_Logradouro(i_id => v_idlogradouro);
+  PERFORM setup_Usuario(i_id => v_idusuario);
+
+  PERFORM insereEndereco(
+    v_numero,
+    v_bairro,
+    v_complemento,
+    v_referencia,
+    v_codcep,
+    v_idlogradouro,
+    v_idusuario
+  );
+
+  SELECT *
+    INTO v_endereco
+    FROM ENDERECO
+   WHERE numero       = v_numero
+     AND idlogradouro = v_idlogradouro
+     AND codigocep    = v_codcep
+     AND idusuario    = v_idusuario;
+  
+  ASSERT v_endereco.numero IS NOT NULL, 'O número do endereço não deve ser nulo';
+  ASSERT v_endereco.idlogradouro IS NOT NULL, 'O id do logradouro do endereço não deve ser nulo';
+  ASSERT v_endereco.codigocep IS NOT NULL, 'O codigo do cep do endereço não deve ser nulo';
+  ASSERT v_endereco.idusuario IS NOT NULL, 'O id do usuário do endereço não deve ser nulo';
+
+  ASSERT v_endereco.numero = v_numero, 'O resultado deve ser equivalente ao cadastrado';
+  ASSERT v_endereco.idlogradouro = v_idlogradouro, 'O resultado deve ser equivalente ao cadastrado';
+  ASSERT v_endereco.codigocep = v_codcep, 'O resultado deve ser equivalente ao cadastrado';
+  ASSERT v_endereco.idusuario = v_idusuario, 'O resultado deve ser equivalente ao cadastrado';
+END;
+$$ LANGUAGE plpgsql;
 ---------------------- { Engine } -------------------------------
 CREATE OR REPLACE FUNCTION execute_test()
 RETURNS VOID AS $$
@@ -296,5 +424,8 @@ BEGIN
 
   RAISE NOTICE ' - test_insereCep';
   PERFORM test_insereCep();
+
+  RAISE NOTICE ' - test_insereEndereco';
+  PERFORM test_insereEndereco();
 END;
 $$ LANGUAGE PLPGSQL;
