@@ -128,6 +128,137 @@ EXCEPTION
      WHERE LOGRADOURO.ID        = v_logradouro.codigo;
 END;
 $$ LANGUAGE PLPGSQL;
+--------------------------------------------------------------------
+-------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION setup_tipoCaixa (
+  IN    i_id             TIPOCAIXA.ID%TYPE            DEFAULT NULL,
+  IN    i_descricao      TIPOCAIXA.DESCRICAO%TYPE     DEFAULT NULL,
+  IN    i_datacriacao    TIPOCAIXA.DATACRIACAO%TYPE   DEFAULT NULL,
+  IN    i_dataalteracao  TIPOCAIXA.DATAALTERACAO%TYPE DEFAULT NULL,
+  IN    i_ativo          TIPOCAIXA.ATIVO%TYPE         DEFAULT NULL,
+  IN    i_excluido       TIPOCAIXA.EXCLUIDO%TYPE      DEFAULT NULL
+)
+RETURNS void AS $$
+DECLARE
+  v_tipoCaixa TIPOCAIXA%ROWTYPE;
+BEGIN
+  v_tipoCaixa.id            := COALESCE(i_id, -1);
+  v_tipoCaixa.descricao     := COALESCE(i_descricao, 'Descrição de teste');
+  v_tipoCaixa.datacriacao   := COALESCE(i_datacriacao, CURRENT_TIMESTAMP);
+  v_tipoCaixa.dataalteracao := COALESCE(i_dataalteracao, CURRENT_TIMESTAMP);
+  v_tipoCaixa.ativo         := COALESCe(i_ativo, TRUE);
+  v_tipoCaixa.excluido      := COALESCE(i_excluido, FALSE);
+
+  INSERT INTO TIPOCAIXA VALUES (v_tipoCaixa.*);
+
+EXCEPTION
+  WHEN UNIQUE_VIOLATION THEN
+    UPDATE TIPOCAIXA
+       SET descricao     = v_tipoCaixa.descricao,
+           datacriacao   = v_tipoCaixa.datacriacao,
+           dataalteracao = v_tipoCaixa.dataalteracao,
+           ativo         = v_tipoCaixa.ativo,
+           excluido      = v_tipoCaixa.excluido
+     WHERE TIPOCAIXA.id = v_tipoCaixa.id;
+END;
+$$ LANGUAGE plpgsql;
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION setup_moeda (
+  IN    i_codigo        MOEDA.CODIGO%TYPE        DEFAULT NULL,
+  IN    i_nome          MOEDA.NOME%TYPE          DEFAULT NULL,
+  IN    i_simbolo       MOEDA.SIMBOLO%TYPE       DEFAULT NULL,
+  IN    i_datacriacao   MOEDA.DATACRIACAO%TYPE   DEFAULT NULL,
+  IN    i_dataalteracao MOEDA.DATAALTERACAO%TYPE DEFAULT NULL,
+  IN    i_ativo         MOEDA.ATIVO%TYPE         DEFAULT NULL,
+  IN    i_excluido      MOEDA.EXCLUIDO%TYPE      DEFAULT NULL
+) RETURNS void AS $$
+DECLARE
+  v_moeda MOEDA%ROWTYPE;
+BEGIN
+  v_moeda.codigo        := COALESCE(i_codigo, -1);
+  v_moeda.nome          := COALESCE(i_nome, 'Nome de Teste');
+  v_moeda.simbolo       := COALESCE(i_simbolo, 'x');
+  v_moeda.datacriacao   := COALESCE(i_datacriacao, CURRENT_TIMESTAMP);
+  v_moeda.dataalteracao := COALESCE(i_dataalteracao, CURRENT_TIMESTAMP);
+  v_moeda.ativo         := COALESCE(i_ativo, TRUE);
+  v_moeda.excluido      := COALESCE(i_excluido, FALSE);
+
+  INSERT INTO MOEDA VALUES (v_moeda.*);
+EXCEPTION
+  WHEN UNIQUE_VIOLATION THEN
+    UPDATE MOEDA
+       SET nome          = v_moeda.nome,
+           simbolo       = v_moeda.simbolo,
+           datacriacao   = v_moeda.datacriacao,
+           dataalteracao = v_moeda.dataalteracao,
+           ativo         = v_moeda.ativo,
+           excluido      = v_moeda.excluido;
+END;
+$$ LANGUAGE plpgsql;
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION setup_caixa (
+  i_codigo        CAIXA.CODIGO%TYPE        DEFAULT NULL,
+  i_nome          CAIXA.NOME%TYPE          DEFAULT NULL,
+  i_idusuario     CAIXA.IDUSUARIO%TYPE     DEFAULT NULL,
+  i_idtipoCaixa   CAIXA.IDTIPOCAIXA%TYPE   DEFAULT NULL,
+  i_codigomoeda   CAIXA.CODIGOMOEDA%TYPE   DEFAULT NULL,
+  i_corVermelho   CAIXA.CORVERMELHO%TYPE   DEFAULT NULL,
+  i_corAzul       CAIXA.CORAZUL%TYPE       DEFAULT NULL,
+  i_corVerde      CAIXA.CORVERDE%TYPE      DEFAULT NULL,
+  i_prioridade    CAIXA.PRIORIDADE%TYPE    DEFAULT NULL,
+  i_saldo         CAIXA.SALDO%TYPE         DEFAULT NULL,
+  i_datacriacao   CAIXA.DATACRIACAO%TYPE   DEFAULT NULL,
+  i_dataalteracao CAIXA.DATAALTERACAO%TYPE DEFAULT NULL,
+  i_ativo         CAIXA.ATIVO%TYPE         DEFAULT NULL,
+  i_excluido      CAIXA.EXCLUIDO%TYPE      DEFAULT NULL
+)
+RETURNS void AS $$
+DECLARE
+  v_caixa CAIXA%ROWTYPE;
+BEGIN
+  v_caixa.idusuario := -1;
+  v_caixa.idtipoCaixa := -1;
+  v_caixa.codigomoeda := -1;
+  PERFORM setup_Usuario(i_id => v_caixa.idusuario);
+  PERFORM setup_tipoCaixa(i_id => v_caixa.idtipoCaixa);
+  PERFORM setup_moeda(i_codigo => v_caixa.codigomoeda);
+
+  v_caixa.codigo        := COALESCE(i_codigo, -1);
+  v_caixa.nome          := COALESCE(i_nome, 'Teste');
+  v_caixa.idusuario     := COALESCE(i_idusuario, v_caixa.idusuario);
+  v_caixa.idtipoCaixa   := COALESCE(i_idtipoCaixa, v_caixa.idtipoCaixa);
+  v_caixa.codigomoeda   := COALESCE(i_codigomoeda, v_caixa.codigomoeda);
+  v_caixa.corVermelho   := COALESCE(i_corVermelho, 0);
+  v_caixa.corAzul       := COALESCE(i_corAzul, 0);
+  v_caixa.corVerde      := COALESCE(i_corVerde, 0);
+  v_caixa.prioridade    := COALESCE(i_prioridade, 1);
+  v_caixa.saldo         := COALESCE(i_saldo, 0);
+  v_caixa.datacriacao   := COALESCE(i_datacriacao, CURRENT_TIMESTAMP);
+  v_caixa.dataalteracao := COALESCE(i_dataalteracao, CURRENT_TIMESTAMP);
+  v_caixa.ativo         := COALESCE(i_ativo, TRUE);
+  v_caixa.excluido      := COALESCE(i_excluido, FALSE);
+
+  INSERT INTO CAIXA VALUES (v_caixa.*);
+EXCEPTION
+  WHEN UNIQUE_VIOLATION THEN
+    UPDATE CAIXA
+       SET nome          = v_caixa.nome,
+           idusuario     = v_caixa.idusuario,
+           idtipoCaixa   = v_caixa.idtipoCaixa,
+           codigomoeda   = v_caixa.codigomoeda,
+           corVermelho   = v_caixa.corVermelho,
+           corAzul       = v_caixa.corAzul,
+           corVerde      = v_caixa.corVerde,
+           prioridade    = v_caixa.prioridade,
+           saldo         = v_caixa.saldo,
+           datacriacao   = v_caixa.datacriacao,
+           dataalteracao = v_caixa.dataalteracao,
+           ativo         = v_caixa.ativo,
+           excluido      = v_caixa.excluido;
+END;
+$$ LANGUAGE plpgsql;
 --------------------- { Tests } ------------------------------------------
 CREATE OR REPLACE FUNCTION test_carregaUsuario()
 RETURNS VOID AS $$
@@ -398,6 +529,88 @@ BEGIN
   ASSERT v_endereco.idusuario = v_idusuario, 'O resultado deve ser equivalente ao cadastrado';
 END;
 $$ LANGUAGE plpgsql;
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+-- É ideal que test_gera_extrato_entrada seja executado antes de test_gera_extrato_saida
+-- Permite aproveitar o valor inserido na entrada
+CREATE OR REPLACE FUNCTION test_gera_extrato_entrada ()
+RETURNS void AS $$
+DECLARE
+  v_cod_caixa  CAIXA.CODIGO%TYPE;
+  v_operacao   VARCHAR(1);
+  v_idOperacao OPERACAOCAIXA.ID%TYPE;
+  v_montante   CAIXA.SALDO%TYPE;
+  v_extrato    EXTRATO%ROWTYPE;
+BEGIN
+  v_cod_caixa := -1;
+  PERFORM setup_caixa(i_codigo => v_cod_caixa);
+  v_operacao := 'E';
+  v_montante := 1;
+
+  PERFORM gera_extrato (
+    v_cod_caixa,
+    v_operacao,
+    v_montante
+  );
+
+  SELECT ID
+    INTO v_idOperacao
+    FROM OPERACAOCAIXA
+   WHERE descricao ILIKE 'Débito';
+
+  SELECT *
+    INTO v_extrato
+    FROM EXTRATO
+   WHERE codigoCaixa     = v_cod_caixa
+     AND idoperacaocaixa = v_idOperacao;
+
+  ASSERT v_extrato.codigoCaixa IS NOT NULL, 'O codigo de caixa não deve ser nulo';
+  ASSERT v_extrato.valorInicial IS NOT NULL, 'O valor inicial do caixa não deve ser nulo';
+  ASSERT v_extrato.valorFinal IS NOT NULL, 'O valor final do caixa não deve ser nulo';
+  ASSERT (v_extrato.valorFinal - v_extrato.valorInicial >= 0), 'A operação deve ser de Entrada';
+END;
+$$ LANGUAGE plpgsql;
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+-- É ideal que test_gera_extrato_entrada seja executado antes de test_gera_extrato_saida
+-- Permite aproveitar o valor inserido na entrada
+CREATE OR REPLACE FUNCTION test_gera_extrato_saida ()
+RETURNS void AS $$
+DECLARE
+  v_cod_caixa  CAIXA.CODIGO%TYPE;
+  v_operacao   VARCHAR(1);
+  v_idOperacao OPERACAOCAIXA.ID%TYPE;
+  v_montante   CAIXA.SALDO%TYPE;
+  v_extrato    EXTRATO%ROWTYPE;
+BEGIN
+  v_cod_caixa := -1;
+  PERFORM setup_caixa(i_codigo => v_cod_caixa);
+  v_operacao := 'S';
+  v_montante := 1;
+
+  PERFORM gera_extrato (
+    v_cod_caixa,
+    v_operacao,
+    v_montante
+  );
+
+  SELECT ID
+    INTO v_idOperacao
+    FROM OPERACAOCAIXA
+   WHERE descricao ILIKE 'Crédito';
+
+  SELECT *
+    INTO v_extrato
+    FROM EXTRATO
+   WHERE codigoCaixa     = v_cod_caixa
+     AND idoperacaocaixa = v_idOperacao;
+
+  ASSERT v_extrato.codigoCaixa IS NOT NULL, 'O codigo de caixa não deve ser nulo';
+  ASSERT v_extrato.valorInicial IS NOT NULL, 'O valor inicial do caixa não deve ser nulo';
+  ASSERT v_extrato.valorFinal IS NOT NULL, 'O valor final do caixa não deve ser nulo';
+  ASSERT (v_extrato.valorFinal - v_extrato.valorInicial <= 0), 'A operação deve ser de Saída';
+END;
+$$ LANGUAGE plpgsql;
 ---------------------- { Engine } -------------------------------
 CREATE OR REPLACE FUNCTION execute_test()
 RETURNS VOID AS $$
@@ -427,5 +640,11 @@ BEGIN
 
   RAISE NOTICE ' - test_insereEndereco';
   PERFORM test_insereEndereco();
+
+  RAISE NOTICE ' - test_gera_extrato_entrada';
+  PERFORM test_gera_extrato_entrada();
+
+  RAISE NOTICE ' - test_gera_extrato_saida';
+  PERFORM test_gera_extrato_saida();
 END;
 $$ LANGUAGE PLPGSQL;
