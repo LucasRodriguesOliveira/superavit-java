@@ -25,7 +25,7 @@ BEGIN
   v_usuario.documento     := COALESCE(i_documento, 'teste');
   v_usuario.telefone      := COALESCE(i_telefone, 'teste');
   v_usuario.email         := COALESCE(i_email, 'Teste@teste.com');
-  v_usuario.senha         := COALESCE(i_senha, 'teste123');
+  v_usuario.senha         := crypt(COALESCE(i_senha, 'teste123'), gen_salt('bf', 8));
   v_usuario.idtipopessoa  := COALESCE(i_idtipopessoa, 1);
   v_usuario.idnivelacesso := COALESCE(i_idnivelacesso, 1);
   v_usuario.datacriacao   := COALESCE(i_datacriacao, CURRENT_TIMESTAMP);
@@ -321,13 +321,7 @@ BEGIN
     v_idnivelacesso
   );
 
-  SELECT nome,
-         documento,
-         telefone,
-         email,
-         senha,
-         idTipoPessoa,
-         idNivelAcesso
+  SELECT *
     INTO v_resultado
     FROM USUARIO
    WHERE email = v_email;
@@ -335,7 +329,7 @@ BEGIN
   v_pswhash := crypt(v_senha, v_resultado.senha);
 
   ASSERT v_resultado.nome          = v_nome, 'O Nome de usuário deve ser o mesmo que o inserido';
-  ASSERT v_resultado.docuemnto     = v_documento, 'O documento do usuário deve ser o mesmo que o inserido';
+  ASSERT v_resultado.documento     = v_documento, 'O documento do usuário deve ser o mesmo que o inserido';
   ASSERT v_resultado.telefone      = v_telefone, 'O telefone deve ser equivalente';
   ASSERT v_resultado.email         = v_email, 'O E-mail deve ser equivalente';
   ASSERT v_resultado.senha         = v_pswhash, 'A senha deve ser equivalente';
@@ -407,7 +401,7 @@ BEGIN
          RESULTADO.mensagem
     FROM NOTIFICACAO
    WHERE idUsuario = v_id
-   ORDER BY datacriacao DESC
+     AND mensagem ILIKE v_mensagem
    LIMIT 1;
 
    ASSERT RESULTADO.idUsuario = v_id, 'O id do usuário que recebeu a notificação deve ser equivalente ao esperado';
@@ -421,8 +415,8 @@ CREATE OR REPLACE FUNCTION test_insereLogradouro ()
 RETURNS void AS $$
 DECLARE
   V_idlogradouro      LOGRADOURO.ID%TYPE;
-  v_nome              LOGRADOURO.NOME%TYPE,
-  v_codtipologradouro LOGRADOURO.CODIGOTIPOLOGRADOURO%TYPE
+  v_nome              LOGRADOURO.NOME%TYPE;
+  v_codtipologradouro LOGRADOURO.CODIGOTIPOLOGRADOURO%TYPE;
   v_nomelogradouro    LOGRADOURO.NOME%TYPE;
 BEGIN
   v_nome := 'Teste';
@@ -430,14 +424,14 @@ BEGIN
   SELECT codigo
     INTO v_codtipologradouro
     FROM TIPOLOGRADOURO
-   WHERE nome = 'Rua';
+   WHERE descricao = 'Rua';
+
+  V_idlogradouro := insereLogradouro(v_nome, v_codtipologradouro);
 
   SELECT nome
     INTO v_nomelogradouro
     FROM LOGRADOURO
    WHERE id = v_idlogradouro;
-
-  V_idlogradouro := insereLogradouro(v_nome, v_codtipologradouro);
 
   ASSERT v_idlogradouro IS NOT NULL, 'O Id do logradouro não deve ser nulo';
   ASSERT v_nomelogradouro = v_nome, 'O nome do logradouro deve ser equivalente';

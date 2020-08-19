@@ -69,6 +69,10 @@ BEGIN
       FROM LOGRADOURO
      WHERE codigotipologradouro = i_codtipologradouro
        AND nome ILIKE i_nome;
+    
+    IF v_id IS NULL THEN
+      RAISE EXCEPTION NO_DATA_FOUND;
+    END IF;
   EXCEPTION
     WHEN NO_DATA_FOUND THEN
       INSERT INTO LOGRADOURO (nome, codigotipologradouro)
@@ -81,7 +85,7 @@ BEGIN
          AND nome ILIKE i_nome;
   END;
 
-  RETURN v_id
+  RETURN v_id;
 END;
 $$ LANGUAGE PLPGSQL;
 -----------------------------------------------------------------------------
