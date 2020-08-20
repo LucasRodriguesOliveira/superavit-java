@@ -5,7 +5,9 @@ import java.awt.CardLayout;
 import java.awt.Container;
 import java.util.ArrayList;
 import view.BaseView;
+import view.FormSignupUserInfoView;
 import view.HomeView;
+import view.InitialView;
 import view.LoginView;
 
 /**
@@ -24,14 +26,15 @@ public class MainController {
         
         views = new ArrayList<>();
         //views.add(new InitialView(parent));
-        views.add(new LoginView(parent));
-        views.add(home);
+        //views.add(new LoginView(parent));
+        //views.add(home);
         //views.add(new OperationsView(parent));
         //views.add(new PaymentOptionsView(parent));
         //views.add(new BillPaymentView(parent));
         //views.add(new PayBillView(parent));
         //views.add(new PayConfirmationView(parent));
         //views.add(new PaymentCompletionView(parent));
+        views.add(new FormSignupUserInfoView(parent));
     }   
     
     public ArrayList<BaseView> getViews() {
