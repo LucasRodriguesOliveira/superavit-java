@@ -1,7 +1,5 @@
 package components;
 
-import javax.swing.ImageIcon;
-
 /**
  *
  * @author Lucas Oliveira
@@ -14,12 +12,11 @@ public class Background extends BaseComponent {
     }
 
     private void initProps(int x, int y, int w, int h, String imgName) {
-      this.X = x;
-      this.Y = y;
-      this.W = w;
-      this.H = h;
-      this.iconPath = imgName + DEFAULT_EXTENSION;
-      this.default_image = this.getImage(iconPath);
+      X = x;
+      Y = y;
+      W = w;
+      H = h;
+      default_image = getImage(imgName + DEFAULT_EXTENSION);
     }
 
     private void setConfigs() {

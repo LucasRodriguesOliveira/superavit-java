@@ -1,5 +1,6 @@
 package superavit;
 
+import javax.swing.JFrame;
 import view.Main;
 /**
  *
@@ -8,7 +9,10 @@ import view.Main;
  * @version 0.0.1
  */
 public class Init {
+    public static JFrame frame;
+    
     public static void main(String[] args) {
-        new Main().setVisible(true);
+        Init.frame = new Main();
+        Init.frame.setVisible(true);
     }
 }

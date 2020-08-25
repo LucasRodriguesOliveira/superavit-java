@@ -23,7 +23,7 @@ public class Main extends JFrame {
     private void initProps() {
         setTitle(MAIN.TITLE);
         setSize(MAIN.WIDTH, MAIN.HEIGHT);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setResizable(false);
         setIconImage((new ImageIcon(getClass().getResource(MAIN.ICON))).getImage());
         setUndecorated(true);
